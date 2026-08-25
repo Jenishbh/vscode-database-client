@@ -28,6 +28,13 @@
         <label class="inline-block mr-5 font-bold w-18">Encrypt</label>
         <el-switch v-model="connectionOption.encrypt"></el-switch>
       </div>
+      <div class="inline-block mr-10">
+        <label
+          class="inline-block mr-5 font-bold"
+          title="Accept a self-signed server certificate. Turn this off to validate the server certificate chain."
+        >Trust Server Certificate</label>
+        <el-switch v-model="connectionOption.trustServerCertificate"></el-switch>
+      </div>
     </section>
 
     <section class="mb-2" v-if="connectionOption.dbType == 'SqlServer' && connectionOption.authType == 'ntlm'">

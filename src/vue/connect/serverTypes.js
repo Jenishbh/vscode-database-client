@@ -20,10 +20,7 @@ export const PRIMARY = [
     label: "Db2", icon: "🔷", kind: "jdbc", bundled: false,
     driver: "com.ibm.db2.jcc.DB2Driver", url: "jdbc:db2://HOST:50000/DATABASE",
   },
-  {
-    label: "Oracle", icon: "🔴", kind: "jdbc", bundled: true,
-    driver: "oracle.jdbc.OracleDriver", url: "jdbc:oracle:thin:@//HOST:1521/SERVICE",
-  },
+  { label: "Oracle", icon: "🔴", kind: "native", dbType: "Oracle", port: 1521 },
   {
     label: "Kingbase", icon: "🗝️", kind: "jdbc", bundled: false,
     driver: "com.kingbase8.Driver", url: "jdbc:kingbase8://HOST:54321/DATABASE",

@@ -82,7 +82,16 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
       */
     public encrypt?: boolean;
     public instanceName?: string;
+    /**
+     * Oracle service name (or SID); falls back to database when unset.
+     */
+    public serviceName?: string;
     public domain?: string;
+    /**
+     * Accept a self-signed server certificate. Defaults to true so existing
+     * connections keep working; turn it off to validate the server chain.
+     */
+    public trustServerCertificate?: boolean;
     public authType?: string;
 
     /**
@@ -166,6 +175,8 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         }
         this.encrypt = source.encrypt
         this.instanceName = source.instanceName
+        this.serviceName = source.serviceName
+        this.trustServerCertificate = source.trustServerCertificate
         this.dbPath = source.dbPath
         this.group = source.group
         this.socksHost = source.socksHost

@@ -152,7 +152,9 @@
         </div>
       </section>
 
-      <SQLServer :connectionOption="connectionOption" v-if="connectionOption.dbType == 'SQL Server'" />
+      <SQLServer :connectionOption="connectionOption" v-if="connectionOption.dbType == 'SqlServer'" />
+
+      <Oracle :connectionOption="connectionOption" />
 
       <section>
         <div class="inline-block mb-2 mr-10" v-if="connectionOption.dbType != 'Redis'">
@@ -333,6 +335,7 @@
 <script>
 import ElasticSearch from "./component/ElasticSearch.vue";
 import SQLite from "./component/SQLite.vue";
+import Oracle from "./component/Oracle.vue";
 import SQLServer from "./component/SQLServer.vue";
 import SSH from "./component/SSH.vue";
 import FTP from "./component/FTP.vue";
@@ -344,7 +347,7 @@ import { getVscodeEvent } from "../util/vscode";
 let vscodeEvent;
 export default {
   name: "Connect",
-  components: { ElasticSearch, SQLite, SQLServer, SSH, SSL, FTP, S3, JDBC },
+  components: { ElasticSearch, SQLite, SQLServer, SSH, SSL, FTP, S3, JDBC, Oracle },
   data() {
     return {
       connectionOption: {
@@ -353,6 +356,7 @@ export default {
         port: "3306",
         user: "root",
         authType: "default",
+        trustServerCertificate: true,
         password: "",
         encoding: "utf8",
         database: null,
