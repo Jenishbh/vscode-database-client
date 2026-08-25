@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const isProd = process.argv.indexOf('--mode=production') >= 0;
 var webpack = require('webpack');
+const StripTrackersPlugin = require('./build/strip-trackers');
 
 module.exports = [
     {
@@ -48,9 +49,11 @@ module.exports = [
             query: './src/vue/result/main.js'
         },
         plugins: [
+            // third party analytics beacons must not survive into the bundle
+            new StripTrackersPlugin(),
             new VueLoaderPlugin(),
             new HtmlWebpackPlugin({ inject: true, template: './public/index.html', chunks: ['app'], filename: 'webview/app.html' }),
-            new HtmlWebpackPlugin({ inject: true, templateContent: `<head><script src="js/oldCompatible.js"></script></head><body> <div id="app"></div> </body>`, chunks: ['query'], filename: 'webview/result.html' }),
+            new HtmlWebpackPlugin({ inject: true, templateContent: `<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self';"><script src="js/oldCompatible.js"></script></head><body> <div id="app"></div> </body>`, chunks: ['query'], filename: 'webview/result.html' }),
             new CopyWebpackPlugin({
                 patterns: [{ from: 'public', to: './webview' }]
             }),

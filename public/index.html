@@ -1,5 +1,14 @@
 <html>
 <head>
+    <!--
+      Offline-only: the webview must not be able to reach the network. This blocks
+      external images (third party analytics beacons ship as tracking pixels),
+      external fonts, and any XHR/fetch to another origin. Messaging to the
+      extension host goes through acquireVsCodeApi().postMessage, which is not
+      governed by connect-src, so it keeps working.
+      'unsafe-inline' and 'unsafe-eval' are required by Vue 2 and Element UI.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self';">
     <script src="js/oldCompatible.js"></script>
 </head>
 <body class="p-0 m-0">
