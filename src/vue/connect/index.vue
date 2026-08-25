@@ -530,6 +530,12 @@ export default {
         case "Oracle":
           this.connectionOption.user = "system";
           this.connectionOption.port = 1521;
+          this.connectionOption.database = null;
+          break;
+        case "ClickHouse":
+          this.connectionOption.user = "default";
+          this.connectionOption.port = 8123;
+          this.connectionOption.database = "default";
           break;
         case "SqlServer":
           this.connectionOption.user = "sa";
