@@ -134,8 +134,32 @@ ALTER TABLE ${table} ALTER COLUMN ${columnName} ${defaultDefinition};`;
         return `create database "${database}"`;
     }
     showTableSource(database: string, table: string): string {
-        return '';
-        // return `SHOW CREATE TABLE "${database}"."${table}";`
+        // Postgres has no built-in SHOW CREATE TABLE; reconstruct a reasonable DDL
+        // from information_schema/pg_catalog (columns + primary key).
+        return `SELECT 'CREATE TABLE ' || quote_ident(t.schemaname) || '.' || quote_ident(t.tablename) || ' (' || chr(10) ||
+  string_agg(
+    '    ' || quote_ident(c.column_name) || ' ' ||
+    CASE WHEN c.data_type = 'character varying' THEN 'varchar'
+         WHEN c.data_type = 'character' THEN 'char'
+         WHEN c.data_type = 'timestamp without time zone' THEN 'timestamp'
+         WHEN c.data_type = 'timestamp with time zone' THEN 'timestamptz'
+         ELSE c.data_type END ||
+    CASE WHEN c.character_maximum_length IS NOT NULL THEN '(' || c.character_maximum_length || ')'
+         WHEN c.numeric_precision IS NOT NULL AND c.data_type = 'numeric' THEN '(' || c.numeric_precision || ',' || COALESCE(c.numeric_scale,0) || ')'
+         ELSE '' END ||
+    CASE WHEN c.is_nullable = 'NO' THEN ' NOT NULL' ELSE '' END ||
+    CASE WHEN c.column_default IS NOT NULL THEN ' DEFAULT ' || c.column_default ELSE '' END,
+    ',' || chr(10) ORDER BY c.ordinal_position
+  ) ||
+  COALESCE((SELECT ',' || chr(10) || '    PRIMARY KEY (' || string_agg(quote_ident(kcu.column_name), ', ' ORDER BY kcu.ordinal_position) || ')'
+            FROM information_schema.table_constraints tc2
+            JOIN information_schema.key_column_usage kcu ON tc2.constraint_name = kcu.constraint_name AND tc2.table_schema = kcu.table_schema
+            WHERE tc2.constraint_type='PRIMARY KEY' AND tc2.table_schema = t.schemaname AND tc2.table_name = t.tablename), '') ||
+  chr(10) || ');' AS "Create Table"
+FROM pg_tables t
+JOIN information_schema.columns c ON c.table_schema = t.schemaname AND c.table_name = t.tablename
+WHERE t.schemaname = '${database}' AND t.tablename = '${table}'
+GROUP BY t.schemaname, t.tablename;`;
     }
     showViewSource(database: string, table: string): string {
         return `SELECT CONCAT('CREATE VIEW ',table_name,'\nAS\n(',regexp_replace(view_definition,';$',''),')') "Create View",table_name,view_definition from information_schema.views where table_schema='${database}' and table_name='${table}';`
@@ -162,6 +186,23 @@ ALTER TABLE ${table} ALTER COLUMN ${columnName} ${defaultDefinition};`;
     }
     showTriggers(database: string): string {
         return `SELECT TRIGGER_NAME "TRIGGER_NAME" FROM information_schema.TRIGGERS WHERE trigger_schema = '${database}'`;
+    }
+    /**
+     * Triggers scoped to this table only (used by the table designer's Trigger tab).
+     */
+    showTableTriggers(database: string, table: string): string {
+        return `SELECT trigger_name, event_manipulation AS event, action_timing AS timing, event_object_table AS table_name FROM information_schema.triggers WHERE trigger_schema = '${database}' AND event_object_table = '${table}';`;
+    }
+    showTableMeta(database: string, table: string): string {
+        // Postgres has no per-table storage engine/collation; approximate with the
+        // table's access method (usually 'heap') and the database's default collation.
+        return `SELECT am.amname AS engine, (SELECT datcollate FROM pg_database WHERE datname = current_database()) AS collation FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace JOIN pg_am am ON c.relam = am.oid WHERE c.relname = '${table}' AND n.nspname = '${database}';`;
+    }
+    showForeignKeys(database: string, table: string): string {
+        return `SELECT tc.constraint_name, kcu.column_name, ccu.table_name AS referenced_table, ccu.column_name AS referenced_column, rc.update_rule, rc.delete_rule FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema JOIN information_schema.constraint_column_usage ccu ON tc.constraint_name = ccu.constraint_name AND tc.table_schema = ccu.table_schema JOIN information_schema.referential_constraints rc ON tc.constraint_name = rc.constraint_name AND tc.table_schema = rc.constraint_schema WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_schema = '${database}' AND tc.table_name = '${table}';`;
+    }
+    showChecks(database: string, table: string): string {
+        return `SELECT con.conname AS constraint_name, pg_get_constraintdef(con.oid) AS check_clause FROM pg_constraint con JOIN pg_class rel ON rel.oid = con.conrelid JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace WHERE con.contype = 'c' AND rel.relname = '${table}' AND nsp.nspname = '${database}';`;
     }
     showProcedures(database: string): string {
         return `SELECT ROUTINE_NAME "ROUTINE_NAME" FROM information_schema.routines WHERE ROUTINE_SCHEMA = '${database}' and ROUTINE_TYPE='PROCEDURE'`;

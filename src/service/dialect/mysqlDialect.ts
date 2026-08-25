@@ -90,6 +90,21 @@ export class MysqlDialect extends SqlDialect {
     showTriggers(database: string): string {
         return `SELECT TRIGGER_NAME FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = '${database}'`;
     }
+    /**
+     * Triggers scoped to this table only (used by the table designer's Trigger tab).
+     */
+    showTableTriggers(database: string, table: string): string {
+        return `SELECT TRIGGER_NAME AS trigger_name, EVENT_MANIPULATION AS event, ACTION_TIMING AS timing, EVENT_OBJECT_TABLE AS table_name FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = '${database}' AND EVENT_OBJECT_TABLE = '${table}';`;
+    }
+    showTableMeta(database: string, table: string): string {
+        return `SELECT ENGINE AS engine, TABLE_COLLATION AS collation FROM information_schema.TABLES WHERE TABLE_SCHEMA='${database}' AND TABLE_NAME='${table}';`;
+    }
+    showForeignKeys(database: string, table: string): string {
+        return `SELECT kcu.CONSTRAINT_NAME AS constraint_name, kcu.COLUMN_NAME AS column_name, kcu.REFERENCED_TABLE_NAME AS referenced_table, kcu.REFERENCED_COLUMN_NAME AS referenced_column, rc.UPDATE_RULE AS update_rule, rc.DELETE_RULE AS delete_rule FROM information_schema.KEY_COLUMN_USAGE kcu JOIN information_schema.REFERENTIAL_CONSTRAINTS rc ON kcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME AND kcu.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA WHERE kcu.TABLE_SCHEMA = '${database}' AND kcu.TABLE_NAME = '${table}' AND kcu.REFERENCED_TABLE_NAME IS NOT NULL;`;
+    }
+    showChecks(database: string, table: string): string {
+        return `SELECT tc.CONSTRAINT_NAME AS constraint_name, cc.CHECK_CLAUSE AS check_clause FROM information_schema.TABLE_CONSTRAINTS tc JOIN information_schema.CHECK_CONSTRAINTS cc ON tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME AND tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA WHERE tc.CONSTRAINT_TYPE = 'CHECK' AND tc.TABLE_SCHEMA = '${database}' AND tc.TABLE_NAME = '${table}';`;
+    }
     showProcedures(database: string): string {
         return `SELECT ROUTINE_NAME FROM information_schema.routines WHERE ROUTINE_SCHEMA = '${database}' and ROUTINE_TYPE='PROCEDURE'`;
     }

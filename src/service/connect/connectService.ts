@@ -67,6 +67,16 @@ export class ConnectService {
                     const terminal = window.createTerminal("installSqlite")
                     terminal.sendText(command)
                     terminal.show()
+                }).on("save", async (data) => {
+                    // persist the connection without opening it
+                    const node: Node = Util.trim(NodeUtil.of(data.connectionOption))
+                    try {
+                        node.initKey();
+                        await provider.addConnection(node)
+                        handler.emit("success", { message: "Save success!", key: node.key, connectionKey: node.connectionKey })
+                    } catch (err) {
+                        handler.emit("error", err?.message || err)
+                    }
                 }).on("connecting", async (data) => {
                     const connectionOption = data.connectionOption
                     const node:Node = Util.trim(NodeUtil.of(connectionOption))
@@ -128,6 +138,31 @@ export class ConnectService {
             DbTreeDataProvider.refresh();
         } catch (error) {
             window.showErrorMessage("Parse connect config fail!")
+        }
+    }
+
+    /**
+     * Load connections from a json file in the same shape openConfig writes.
+     * Existing connections with the same key are replaced, others are kept.
+     */
+    public static async importConfig(): Promise<void> {
+        const uris = await window.showOpenDialog({
+            canSelectMany: false,
+            openLabel: 'Import',
+            filters: { 'Connection config': ['json'] },
+        });
+        if (!uris || !uris[0]) { return; }
+        try {
+            const parsed: ConnnetionConfig = JSON.parse(readFileSync(uris[0].fsPath, { encoding: 'utf8' }));
+            const merge = (a: any, b: any) => Object.assign({}, a || {}, b || {});
+            await GlobalState.update(CacheKey.DATBASE_CONECTIONS, merge(GlobalState.get(CacheKey.DATBASE_CONECTIONS), parsed.database && parsed.database.global));
+            await WorkState.update(CacheKey.DATBASE_CONECTIONS, merge(WorkState.get(CacheKey.DATBASE_CONECTIONS), parsed.database && parsed.database.workspace));
+            await GlobalState.update(CacheKey.NOSQL_CONNECTION, merge(GlobalState.get(CacheKey.NOSQL_CONNECTION), parsed.nosql && parsed.nosql.global));
+            await WorkState.update(CacheKey.NOSQL_CONNECTION, merge(WorkState.get(CacheKey.NOSQL_CONNECTION), parsed.nosql && parsed.nosql.workspace));
+            DbTreeDataProvider.refresh();
+            window.showInformationMessage('Connections imported.');
+        } catch (error) {
+            window.showErrorMessage(`Import failed: ${error.message}`);
         }
     }
 

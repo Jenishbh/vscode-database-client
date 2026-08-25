@@ -37,7 +37,7 @@ Some features shell out to command line tools. This fork never downloads them. Y
 them yourself, then either put them on your `PATH` or drop them in one folder and point the
 extension at it:
 
-1. Set **`database-client.binaryPath`** to a folder of your choice.
+1. Set **`database-client-jenishbh.binaryPath`** to a folder of your choice.
 2. Place the executables you need in that folder.
 3. Run **`Database Client: Check External Tools`** from the Command Palette to verify.
 

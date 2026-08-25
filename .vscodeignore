@@ -26,3 +26,5 @@ audit2.json
 .git/
 build.js
 .vscodeignore
+vsix-verify/
+*.vsix

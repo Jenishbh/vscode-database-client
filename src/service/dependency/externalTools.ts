@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Global } from "@/common/global";
 import { Console } from "@/common/Console";
-import { existsSync } from "fs";
+import { existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { platform } from "os";
 var commandExistsSync = require('command-exists').sync;
@@ -9,7 +9,7 @@ var commandExistsSync = require('command-exists').sync;
 /**
  * External command line tools this extension can use.
  * Nothing here is ever downloaded: the user installs the tool themselves,
- * either on PATH or into the folder set by 'database-client.binaryPath'.
+ * either on PATH or into the folder set by 'database-client-jenishbh.binaryPath'.
  */
 export const EXTERNAL_TOOLS: { command: string, purpose: string }[] = [
     { command: 'sqlite3', purpose: 'SQLite connections (a fallback binary ships with the extension)' },
@@ -67,13 +67,24 @@ export class ExternalTools {
             const dir = this.getBinaryPath();
             const errText = dir
                 ? `Command '${command}' not found on PATH or in ${dir}`
-                : `Command '${command}' not found on PATH. Set 'database-client.binaryPath' to a folder containing it.`;
+                : `Command '${command}' not found on PATH. Set 'database-client-jenishbh.binaryPath' to a folder containing it.`;
             vscode.window.showErrorMessage(errText, 'Check External Tools').then(choice => {
-                if (choice) { vscode.commands.executeCommand('mysql.dependency.check'); }
+                if (choice) { vscode.commands.executeCommand('jenishbh.dependency.check'); }
             });
             throw new Error(errText);
         }
         return resolved;
+    }
+
+    /** Driver jars the user placed in the binary folder. Nothing is downloaded. */
+    public static findJars(): string[] {
+        const dir = this.getBinaryPath();
+        if (!dir || !existsSync(dir)) return [];
+        try {
+            return readdirSync(dir).filter(f => f.toLowerCase().endsWith(".jar"));
+        } catch (err) {
+            return [];
+        }
     }
 
     private static candidates(command: string): string[] {
@@ -101,6 +112,12 @@ export class ExternalTools {
             Console.log(`  ${resolved ? 'OK     ' : 'MISSING'} ${tool.command} ${resolved ? `-> ${resolved}` : ''}`);
         }
 
+        const jars = this.findJars();
+        Console.log(`  JDBC driver jars: ${jars.length ? jars.join(", ") : "(none)"}`);
+        for (const jar of jars) {
+            items.push({ label: `$(check) ${jar}`, description: "JDBC driver jar", detail: "Usable by a JDBC connection" });
+        }
+
         const missing = EXTERNAL_TOOLS.filter(t => !this.exists(t.command)).length;
         const picked = await vscode.window.showQuickPick(items, {
             placeHolder: missing == 0
@@ -109,7 +126,7 @@ export class ExternalTools {
             matchOnDetail: true,
         });
         if (picked) {
-            vscode.commands.executeCommand('workbench.action.openSettings', 'database-client.binaryPath');
+            vscode.commands.executeCommand('workbench.action.openSettings', 'database-client-jenishbh.binaryPath');
         }
     }
 

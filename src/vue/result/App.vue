@@ -4,23 +4,25 @@
       <div style="width:95%;">
         <el-input type="textarea" :autosize="{ minRows:2, maxRows:5}" v-model="toolbar.sql" class="sql-pannel" @keypress.native="panelInput" />
       </div>
-      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" :costTime="result.costTime" @changePage="changePage" @sendToVscode="sendToVscode" @export="exportOption.visible = true" @insert="$refs.editor.openInsert()" @deleteConfirm="deleteConfirm" @run="info.message = false;execute(toolbar.sql);" />
+      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" :viewMode.sync="viewMode" :costTime="result.costTime" @changePage="changePage" @sendToVscode="sendToVscode" @export="exportOption.visible = true" @insert="$refs.editor.openInsert()" @deleteConfirm="deleteConfirm" @run="info.message = false;execute(toolbar.sql);" />
       <div v-if="info.message ">
         <div v-if="info.error" class="info-panel" style="color:red !important" v-html="info.message"></div>
         <div v-if="!info.error" class="info-panel" style="color: green !important;" v-html="info.message"></div>
       </div>
     </div>
     <!-- trigger when click -->
-    <ux-grid ref="dataTable" :data="filterData" v-loading='table.loading' size='small' :cell-style="{height: '35px'}" @sort-change="sort" :height="remainHeight" width="100vh" stripe :checkboxConfig="{ checkMethod: selectable}">
+    <ux-grid v-if="viewMode==='default'" ref="dataTable" :data="filterData" v-loading='table.loading' size='small' :cell-style="{height: '35px'}" @sort-change="sort" :height="remainHeight" width="100vh" stripe :checkboxConfig="{ checkMethod: selectable}">
       <ux-table-column type="checkbox" width="40" fixed="left"></ux-table-column>
       <ux-table-column type="index" width="40" :seq-method="({row,rowIndex})=>(rowIndex||!row.isFilter)?rowIndex:undefined">
         <Controller slot="header" :result="result" :toolbar="toolbar" />
       </ux-table-column>
-      <ux-table-column v-for="(field,index) in (result.fields||[]).filter(field=>toolbar.showColumns.includes(field.name.toLowerCase()))" :key="index" :resizable="true" :field="field.name" :title="field.name" :sortable="true" :width="computeWidth(field,0)" edit-render>
+      <ux-table-column v-for="(field,index) in visibleFields" :key="index" :resizable="true" :field="field.name" :title="field.name" :sortable="true" :width="computeWidth(field,0)" edit-render>
         <Header slot="header" slot-scope="scope" :result="result" :scope="scope" :index="index" />
-        <Row slot-scope="scope" :scope="scope" :result="result" :filterObj="toolbar.filter" :editList.sync="update.editList" @execute="execute" @sendToVscode="sendToVscode" @openEditor="openEditor" />
+        <Row slot-scope="scope" :scope="scope" :result="result" :filterObj="toolbar.filter" :editList.sync="update.editList" @execute="execute" @sendToVscode="sendToVscode" @openEditor="openEditor" @duplicateRows="duplicateRows" @localFilter="localFilter" />
       </ux-table-column>
     </ux-grid>
+    <ReverseView v-else-if="viewMode==='reverse'" :fields="visibleFields" :rows="viewRows" :height="remainHeight" />
+    <JsonView v-else-if="viewMode==='json'" :rows="viewRows" :height="remainHeight" />
     <EditDialog ref="editor" :dbType="result.dbType" :result="result" :database="result.database" :table="result.table" :primaryKey="result.primaryKey" :primaryKeyList="result.primaryKeyList" :columnList="result.columnList" @execute="execute" />
     <ExportDialog :visible.sync="exportOption.visible" @exportHandle="confirmExport" />
   </div>
@@ -34,6 +36,8 @@ import Header from "./component/Row/Header.vue";
 import ExportDialog from "./component/ExportDialog.vue";
 import Toolbar from "./component/Toolbar";
 import EditDialog from "./component/EditDialog";
+import ReverseView from "./component/ReverseView.vue";
+import JsonView from "./component/JsonView.vue";
 import { util } from "./mixin/util";
 import { wrapByDb } from "@/common/wrapper";
 let vscodeEvent;
@@ -47,12 +51,15 @@ export default {
     Controller,
     Row,
     Header,
+    ReverseView,
+    JsonView,
   },
   data() {
     return {
       showFullBtn: false,
       remainHeight: 0,
       connection: {},
+      viewMode: "default",
       result: {
         data: [],
         dbType: "",
@@ -74,6 +81,7 @@ export default {
         search: "",
         loading: true,
         widthItem: {},
+        localFilter: { column: null, value: null },
       },
       toolbar: {
         sql: null,
@@ -258,6 +266,31 @@ export default {
         this.$refs.editor.openEdit(row);
       }
     },
+    duplicateRows(row) {
+      const checked = this.$refs.dataTable
+        ? this.$refs.dataTable.getCheckboxRecords()
+        : [];
+      const rows = checked && checked.length ? checked : [row];
+      let sql = "";
+      for (const r of rows) {
+        sql += this.$refs.editor.buildInsertSql(r) + "\n";
+      }
+      if (sql.trim()) {
+        this.execute(sql);
+      } else {
+        this.$message("Not any input, duplicate fail!");
+      }
+    },
+    localFilter(column, value) {
+      if (
+        this.table.localFilter.column === column &&
+        this.table.localFilter.value === value
+      ) {
+        this.table.localFilter = { column: null, value: null };
+      } else {
+        this.table.localFilter = { column, value };
+      }
+    },
     confirmExport(exportOption) {
       vscodeEvent.emit("export", {
         option: {
@@ -288,7 +321,9 @@ export default {
       }
     },
     deleteConfirm() {
-      const datas = this.$refs.dataTable.getCheckboxRecords();
+      const datas = this.$refs.dataTable
+        ? this.$refs.dataTable.getCheckboxRecords()
+        : [];
       if (!datas || datas.length == 0) {
         this.$message({
           type: "warning",
@@ -431,19 +466,33 @@ export default {
       // toolbar
       if (!this.result.sql.match(/\bwhere\b/gi)) {
         this.toolbar.filter = {};
-        this.$refs.dataTable.clearSort();
+        if (this.$refs.dataTable) {
+          this.$refs.dataTable.clearSort();
+        }
       }
     },
   },
   computed: {
     filterData() {
+      const localFilter = this.table.localFilter;
       return this.result.data.filter(
         (data) =>
-          !this.table.search ||
-          JSON.stringify(data)
-            .toLowerCase()
-            .includes(this.table.search.toLowerCase())
+          (!this.table.search ||
+            JSON.stringify(data)
+              .toLowerCase()
+              .includes(this.table.search.toLowerCase())) &&
+          (!localFilter.column ||
+            data.isFilter ||
+            "" + data[localFilter.column] === "" + localFilter.value)
       );
+    },
+    visibleFields() {
+      return (this.result.fields || []).filter((field) =>
+        this.toolbar.showColumns.includes(field.name.toLowerCase())
+      );
+    },
+    viewRows() {
+      return this.filterData.filter((row) => !row.isFilter);
     },
     editable() {
       return this.result.primaryKey && this.result.tableCount == 1;

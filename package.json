@@ -1,8 +1,8 @@
 {
 	"name": "vscode-database-client",
-	"displayName": "Database Client",
+	"displayName": "Database Client (jenishbh)",
 	"description": "Database Client for VS Code - MySQL, PostgreSQL, SQLite, Redis, MongoDB, MSSQL, ElasticSearch, SSH&FTP. Offline-only fork.",
-	"version": "1.0.0",
+	"version": "1.5.0",
 	"license": "MIT",
 	"publisher": "jenishbh",
 	"icon": "resources/logo.png",
@@ -30,8 +30,8 @@
 		"url": "https://github.com/jenishbh/vscode-database-client.git"
 	},
 	"activationEvents": [
-		"onCommand:mysql.connection.add",
-		"onCommand:mysql.refresh",
+		"onCommand:jenishbh.connection.add",
+		"onCommand:jenishbh.refresh",
 		"onView:github.jenishbh.mysql",
 		"onView:github.jenishbh.nosql"
 	],
@@ -84,12 +84,12 @@
 			"activitybar": [
 				{
 					"id": "github-jenishbh-mysql",
-					"title": "Database",
+					"title": "DB (jenishbh)",
 					"icon": "resources/icon/database-container.svg"
 				},
 				{
 					"id": "github-jenishbh-nosql",
-					"title": "NoSQL",
+					"title": "NoSQL (jenishbh)",
 					"icon": "resources/image/other-container.png"
 				}
 			]
@@ -110,853 +110,885 @@
 		},
 		"commands": [
 			{
-				"command": "mysql.dependency.check",
+				"command": "jenishbh.connection.import",
+				"title": "Import Connections",
+				"category": "Database Client",
+				"icon": "$(cloud-download)"
+			},
+			{
+				"command": "jenishbh.dependency.check",
 				"title": "Check External Tools",
 				"category": "Database Client",
 				"icon": "$(check-all)"
 			},
 			{
-				"command": "mysql.struct.diff",
+				"command": "jenishbh.struct.diff",
 				"title": "%command.struct.diff%",
 				"category": "Database Client",
 				"icon": "$(sync)"
 			},
 			{
-				"command": "mysql.history.open",
+				"command": "jenishbh.history.open",
 				"title": "%command.history.open%",
 				"category": "Database Client",
 				"icon": "$(history)"
 			},
 			{
-				"command": "mysql.setting.open",
+				"command": "jenishbh.setting.open",
 				"title": "%command.setting.open%",
 				"category": "Database Client",
 				"icon": "resources/icon/settings.svg"
 			},
 			{
-				"command": "mysql.refresh",
+				"command": "jenishbh.refresh",
 				"title": "%command.refresh%",
 				"category": "Database Client",
 				"icon": "$(refresh)"
 			},
 			{
-				"command": "mysql.host.copy",
+				"command": "jenishbh.host.copy",
 				"title": "%command.host.copy%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.name.copy",
+				"command": "jenishbh.name.copy",
 				"title": "%command.name.copy%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.query.add",
+				"command": "jenishbh.query.add",
 				"title": "%command.query.add%",
 				"icon": "$(add)",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.query.rename",
+				"command": "jenishbh.query.rename",
 				"title": "%command.query.rename%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.query.run",
+				"command": "jenishbh.query.run",
 				"title": "%command.query.run%",
 				"icon": "$(run)",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.connection.add",
+				"command": "jenishbh.connection.add",
 				"title": "%command.connection.add%",
 				"icon": "$(add)",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.util.github",
+				"command": "jenishbh.util.github",
 				"title": "%command.util.github%",
 				"icon": "$(github)",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.connection.edit",
+				"command": "jenishbh.connection.edit",
 				"title": "%command.connection.edit%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.connection.config",
+				"command": "jenishbh.connection.config",
 				"title": "%command.connection.config%",
 				"icon": "$(gear)",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.connection.disable",
+				"command": "jenishbh.connection.disable",
 				"title": "%command.connection.disable%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.server.info",
+				"command": "jenishbh.server.info",
 				"title": "%command.server.info%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.connection.delete",
+				"command": "jenishbh.connection.delete",
 				"title": "%command.connection.delete%",
 				"category": "Database Client",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "mysql.database.add",
+				"command": "jenishbh.database.add",
 				"title": "%command.database.add%",
 				"icon": "$(add)",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.db.drop",
+				"command": "jenishbh.db.drop",
 				"title": "%command.db.drop%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.runQuery",
+				"command": "jenishbh.runQuery",
 				"title": "%command.runQuery%",
 				"category": "Database Client",
 				"icon": "$(run)"
 			},
 			{
-				"command": "mysql.runAllQuery",
+				"command": "jenishbh.runAllQuery",
 				"title": "%command.runAllQuery%",
 				"category": "Database Client",
 				"icon": "$(run)"
 			},
 			{
-				"command": "mysql.query.switch",
+				"command": "jenishbh.query.switch",
 				"title": "%command.query.switch%",
 				"category": "Database Client",
 				"icon": "$(symbol-file)"
 			},
 			{
-				"command": "mysql.data.import",
+				"command": "jenishbh.data.import",
 				"title": "%command.data.import%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.data.export",
+				"command": "jenishbh.data.export",
 				"title": "%command.data.export%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.struct.export",
+				"command": "jenishbh.struct.export",
 				"title": "%command.struct.export%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.document.generate",
+				"command": "jenishbh.document.generate",
 				"title": "%command.document.generate%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.db.active",
+				"command": "jenishbh.db.active",
 				"title": "%command.db.active%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.table.truncate",
+				"command": "jenishbh.table.truncate",
 				"title": "%command.table.truncate%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.db.truncate",
+				"command": "jenishbh.db.truncate",
 				"title": "%command.db.truncate%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.table.drop",
+				"command": "jenishbh.table.drop",
 				"title": "%command.table.drop%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.mock.run",
+				"command": "jenishbh.mock.run",
 				"title": "%command.mock.run%",
 				"category": "Database Client",
 				"icon": "$(run)"
 			},
 			{
-				"command": "mysql.mock.table",
+				"command": "jenishbh.mock.table",
 				"title": "%command.mock.table%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.changeTableName",
+				"command": "jenishbh.changeTableName",
 				"title": "%command.changeTableName%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.table.design",
+				"command": "jenishbh.table.design",
 				"title": "%comman.table.design%",
-				"category": "Database Client"
+				"category": "Database Client",
+				"icon": "$(symbol-structure)"
 			},
 			{
-				"command": "mysql.column.add",
+				"command": "jenishbh.column.add",
 				"title": "%command.column.add%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.column.up",
+				"command": "jenishbh.column.up",
 				"title": "%command.column.up%",
 				"category": "Database Client",
 				"icon": "$(arrow-up)"
 			},
 			{
-				"command": "mysql.column.down",
+				"command": "jenishbh.column.down",
 				"title": "%command.column.down%",
 				"category": "Database Client",
 				"icon": "$(arrow-down)"
 			},
 			{
-				"command": "mysql.table.source",
+				"command": "jenishbh.table.source",
 				"title": "%command.table.source%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.view.source",
+				"command": "jenishbh.view.source",
 				"title": "%command.view.source%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.table.show",
+				"command": "jenishbh.table.show",
 				"title": "%command.table.show%",
 				"category": "Database Client",
 				"icon": "$(list-flat)"
 			},
 			{
-				"command": "mysql.column.update",
+				"command": "jenishbh.column.update",
 				"title": "%command.column.update%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.column.drop",
+				"command": "jenishbh.column.drop",
 				"title": "%command.column.drop%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.template.sql",
+				"command": "jenishbh.template.sql",
 				"title": "%command.template.sql%",
 				"category": "Database Client",
 				"icon": "$(symbol-file)"
 			},
 			{
-				"command": "mysql.template.table",
+				"command": "jenishbh.template.table",
 				"title": "%command.template.table%",
 				"category": "Database Client",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.template.view",
+				"command": "jenishbh.template.view",
 				"title": "%command.template.view%",
 				"category": "Database Client",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.template.procedure",
+				"command": "jenishbh.template.procedure",
 				"title": "%command.template.procedure%",
 				"category": "Database Client",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.template.trigger",
+				"command": "jenishbh.template.trigger",
 				"title": "%command.template.trigger%",
 				"category": "Database Client",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.template.function",
+				"command": "jenishbh.template.function",
 				"title": "%command.template.function%",
 				"category": "Database Client",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.template.user",
+				"command": "jenishbh.template.user",
 				"title": "%command.template.user%",
 				"category": "Database Client",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.delete.user",
+				"command": "jenishbh.delete.user",
 				"title": "%command.delete.user%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.user.grant",
+				"command": "jenishbh.user.grant",
 				"title": "%command.user.grant%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.change.user",
+				"command": "jenishbh.change.user",
 				"title": "%command.change.user%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.delete.view",
+				"command": "jenishbh.delete.view",
 				"title": "%command.delete.view%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.delete.procedure",
+				"command": "jenishbh.delete.procedure",
 				"title": "%command.delete.procedure%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.delete.function",
+				"command": "jenishbh.delete.function",
 				"title": "%command.delete.function%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.delete.trigger",
+				"command": "jenishbh.delete.trigger",
 				"title": "%command.delete.trigger%",
 				"category": "Database Client"
 			},
 			{
-				"command": "mysql.connection.terminal",
+				"command": "jenishbh.connection.terminal",
 				"title": "%command.connection.terminal%",
 				"icon": "$(terminal)"
 			},
 			{
-				"command": "mysql.redis.connection.status",
+				"command": "jenishbh.redis.connection.status",
 				"title": "%command.redis.connection.status%"
 			},
 			{
-				"command": "mysql.redis.key.del",
+				"command": "jenishbh.redis.key.del",
 				"title": "%command.redis.key.del%",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "mysql.redis.key.detail",
+				"command": "jenishbh.redis.key.detail",
 				"title": "%command.redis.key.detail%"
 			},
 			{
-				"command": "mysql.ssh.terminal.hear",
+				"command": "jenishbh.ssh.terminal.hear",
 				"title": "Open Terminal in hear"
 			},
 			{
-				"command": "mysql.ssh.path.copy",
+				"command": "jenishbh.ssh.path.copy",
 				"title": "Copy Path"
 			},
 			{
-				"command": "mysql.ssh.file.new",
+				"command": "jenishbh.ssh.file.new",
 				"title": "New File"
 			},
 			{
-				"command": "mysql.ssh.folder.new",
+				"command": "jenishbh.ssh.folder.new",
 				"title": "New Folder"
 			},
 			{
-				"command": "mysql.ssh.host.copy",
+				"command": "jenishbh.ssh.host.copy",
 				"title": "Copy Host"
 			},
 			{
-				"command": "mysql.ssh.forward.port",
+				"command": "jenishbh.ssh.forward.port",
 				"title": "Forward Port"
 			},
 			{
-				"command": "mysql.ssh.socks.port",
+				"command": "jenishbh.ssh.socks.port",
 				"title": "Start Socks5 Proxy"
 			},
 			{
-				"command": "mysql.ssh.folder.open",
+				"command": "jenishbh.ssh.folder.open",
 				"title": "Open In Terminal"
 			},
 			{
-				"command": "mysql.ssh.file.delete",
+				"command": "jenishbh.ssh.file.delete",
 				"title": "Delete"
 			},
 			{
-				"command": "mysql.ssh.file.download",
+				"command": "jenishbh.ssh.file.download",
 				"title": "Download File",
 				"icon": "$(cloud-download)"
 			},
 			{
-				"command": "mysql.ssh.file.upload",
+				"command": "jenishbh.ssh.file.upload",
 				"title": "Upload File",
 				"icon": "$(cloud-upload)"
+			},
+			{
+				"command": "jenishbh.runQuery.newTab",
+				"title": "Run Query In New Tab",
+				"category": "Database Client"
+			},
+			{
+				"command": "jenishbh.runAllQuery.noParse",
+				"title": "Run All Without Parsing",
+				"category": "Database Client"
 			}
 		],
 		"keybindings": [
 			{
-				"command": "mysql.runQuery",
+				"command": "jenishbh.runQuery",
 				"key": "f9",
 				"when": "editorLangId == sql"
 			},
 			{
-				"command": "mysql.runQuery",
+				"command": "jenishbh.runQuery",
 				"key": "ctrl+enter",
 				"when": "editorLangId == sql"
 			},
 			{
-				"command": "mysql.runAllQuery",
+				"command": "jenishbh.runAllQuery",
 				"key": "ctrl+f9",
 				"when": "editorLangId == sql"
 			},
 			{
-				"command": "mysql.runAllQuery",
+				"command": "jenishbh.runAllQuery",
 				"key": "ctrl+shift+enter",
 				"when": "editorLangId == sql"
 			},
 			{
-				"command": "mysql.mock.run",
+				"command": "jenishbh.mock.run",
 				"when": "resourceFilename =~ /mock\\.json$/ ",
 				"key": "f9"
+			},
+			{
+				"key": "ctrl+alt+enter",
+				"command": "jenishbh.runQuery.newTab",
+				"when": "editorTextFocus && editorLangId == sql"
+			},
+			{
+				"key": "ctrl+alt+shift+enter",
+				"command": "jenishbh.runAllQuery.noParse",
+				"when": "editorTextFocus && editorLangId == sql"
+			},
+			{
+				"key": "ctrl+alt+c",
+				"command": "jenishbh.db.active",
+				"when": "editorTextFocus && editorLangId == sql"
 			}
 		],
 		"menus": {
 			"editor/context": [
 				{
-					"command": "mysql.runQuery",
+					"command": "jenishbh.runQuery",
 					"when": "editorLangId == sql",
 					"group": "navigation@-2"
 				},
 				{
-					"command": "mysql.runAllQuery",
+					"command": "jenishbh.runAllQuery",
 					"when": "editorLangId == sql",
 					"group": "navigation@1"
 				},
 				{
-					"command": "mysql.db.active",
+					"command": "jenishbh.db.active",
 					"when": "editorLangId == sql",
 					"group": "navigation@2"
 				}
 			],
 			"editor/title": [
 				{
-					"command": "mysql.mock.run",
+					"command": "jenishbh.mock.run",
 					"when": "resourceFilename =~ /mock.json$/ ",
 					"group": "navigation"
 				},
 				{
-					"command": "mysql.runQuery",
+					"command": "jenishbh.runQuery",
 					"when": "editorLangId == sql || resourceFilename =~ /.sql$/ ",
 					"group": "navigation"
 				}
 			],
 			"view/title": [
 				{
-					"command": "mysql.connection.add",
+					"command": "jenishbh.connection.add",
 					"when": "view =~ /jenishbh.+?ql/",
 					"group": "navigation@3"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "jenishbh.refresh",
 					"when": "view =~ /jenishbh.+?ql/",
 					"group": "navigation@2"
 				},
 				{
-					"command": "mysql.history.open",
+					"command": "jenishbh.history.open",
 					"when": "view == github.jenishbh.mysql",
 					"group": "navigation@0"
 				},
 				{
-					"command": "mysql.struct.diff",
+					"command": "jenishbh.struct.diff",
 					"when": "view == github.jenishbh.mysql",
 					"group": "navigation@-2"
 				},
 				{
-					"command": "mysql.connection.config",
+					"command": "jenishbh.connection.config",
 					"when": "view =~ /jenishbh.+?ql/",
 					"group": "navigation@-3"
 				},
 				{
-					"command": "mysql.util.github",
+					"command": "jenishbh.util.github",
 					"when": "view == github.jenishbh.nosql",
 					"group": "navigation@-3"
 				}
 			],
 			"view/item/context": [
 				{
-					"command": "mysql.refresh",
+					"command": "jenishbh.refresh",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(catalog|esConnection|sshConnection|folder|redisConnection|connection|tableGroup|viewGroup|systemViewGroup|triggerGroup|procedureGroup|functionGroup|table)$/",
 					"group": "inline@-2"
 				},
 				{
-					"command": "mysql.connection.edit",
-					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
+					"command": "jenishbh.connection.edit",
+					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|s3Connection|sshConnection)$/",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.connection.disable",
-					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection)$/",
+					"command": "jenishbh.connection.disable",
+					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|s3Connection)$/",
 					"group": "1_mysql@4"
 				},
 				{
-					"command": "mysql.host.copy",
+					"command": "jenishbh.host.copy",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection)$/",
 					"group": "1_mysql@6"
 				},
 				{
-					"command": "mysql.database.add",
+					"command": "jenishbh.database.add",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == connection",
 					"group": "2_mysql@0"
 				},
 				{
-					"command": "mysql.query.add",
+					"command": "jenishbh.query.add",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == queryGroup",
 					"group": "2_mysql@0"
 				},
 				{
-					"command": "mysql.query.rename",
+					"command": "jenishbh.query.rename",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == query",
 					"group": "2_mysql@0"
 				},
 				{
-					"command": "mysql.query.run",
+					"command": "jenishbh.query.run",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == query",
 					"group": "2_mysql@0"
 				},
 				{
-					"command": "mysql.refresh",
-					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(esConnection|ftpConnection|ftpFolder)$/",
+					"command": "jenishbh.refresh",
+					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(esConnection|ftpConnection|ftpFolder|s3Connection|s3Bucket|s3Folder)$/",
 					"group": "2_mysql@1"
 				},
 				{
-					"command": "mysql.server.info",
+					"command": "jenishbh.server.info",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == connection",
 					"group": "4_mysql@1"
 				},
 				{
-					"command": "mysql.data.import",
+					"command": "jenishbh.data.import",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == connection",
 					"group": "8_mysql@1"
 				},
 				{
-					"command": "mysql.connection.delete",
-					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
+					"command": "jenishbh.connection.delete",
+					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|s3Connection|sshConnection)$/",
 					"group": "10mysql@2"
 				},
 				{
-					"command": "mysql.database.add",
+					"command": "jenishbh.database.add",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == connection",
 					"group": "inline@0"
 				},
 				{
-					"command": "mysql.connection.terminal",
+					"command": "jenishbh.connection.terminal",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(connection|catalog)$/",
 					"group": "inline@2"
 				},
 				{
-					"command": "mysql.query.switch",
+					"command": "jenishbh.query.switch",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(connection|catalog|database|esConnection|esIndex)$/",
 					"group": "inline@5"
 				},
 				{
-					"command": "mysql.query.add",
+					"command": "jenishbh.query.add",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == queryGroup",
 					"group": "inline@0"
 				},
 				{
-					"command": "mysql.query.run",
+					"command": "jenishbh.query.run",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == query",
 					"group": "inline@0"
 				},
 				{
-					"command": "mysql.template.user",
+					"command": "jenishbh.template.user",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == userGroup",
 					"group": "1_mysql@1"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "jenishbh.refresh",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == userGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.user",
+					"command": "jenishbh.template.user",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == userGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.change.user",
+					"command": "jenishbh.change.user",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == user",
 					"group": "1_mysql@-1"
 				},
 				{
-					"command": "mysql.user.grant",
+					"command": "jenishbh.user.grant",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == user",
 					"group": "1_mysql@0"
 				},
 				{
-					"command": "mysql.delete.user",
+					"command": "jenishbh.delete.user",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == user",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.name.copy",
+					"command": "jenishbh.name.copy",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(catalog|user|database|esColumn|column|table|view|esIndex|procedure|function|trigger|mongoTable|redisKey)$/",
 					"group": "-1_mysql@-5"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "jenishbh.refresh",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == database",
 					"group": "3_mysql@0"
 				},
 				{
-					"command": "mysql.db.truncate",
+					"command": "jenishbh.db.truncate",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == database",
 					"group": "4_mysql@4"
 				},
 				{
-					"command": "mysql.db.drop",
+					"command": "jenishbh.db.drop",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /(database|catalog)/",
 					"group": "4_mysql@5"
 				},
 				{
-					"command": "mysql.data.export",
+					"command": "jenishbh.data.export",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == database",
 					"group": "mysql@5"
 				},
 				{
-					"command": "mysql.struct.export",
+					"command": "jenishbh.struct.export",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == database",
 					"group": "mysql@6"
 				},
 				{
-					"command": "mysql.document.generate",
+					"command": "jenishbh.document.generate",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == database",
 					"group": "mysql@7"
 				},
 				{
-					"command": "mysql.data.import",
+					"command": "jenishbh.data.import",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == database",
 					"group": "mysql@8"
 				},
 				{
-					"command": "mysql.table.show",
+					"command": "jenishbh.table.show",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(table|view)$/",
 					"group": "inline@3"
 				},
 				{
-					"command": "mysql.table.drop",
+					"command": "jenishbh.table.drop",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == table && false",
 					"group": "inline@1"
 				},
 				{
-					"command": "mysql.table.design",
+					"command": "jenishbh.table.design",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == table",
-					"group": "1_inline@0"
+					"group": "2_table@1"
 				},
 				{
-					"command": "mysql.template.sql",
+					"command": "jenishbh.template.sql",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == table",
 					"group": "inline@5"
 				},
 				{
-					"command": "mysql.table.source",
+					"command": "jenishbh.table.source",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(table)$/",
-					"group": "1_inline@2"
+					"group": "2_table@2"
 				},
 				{
-					"command": "mysql.view.source",
+					"command": "jenishbh.view.source",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(view)$/",
-					"group": "1_inline@2"
+					"group": "2_table@2"
 				},
 				{
-					"command": "mysql.column.add",
+					"command": "jenishbh.column.add",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == table",
-					"group": "1_inline@6"
+					"group": "2_table@3"
 				},
 				{
-					"command": "mysql.mock.table",
+					"command": "jenishbh.mock.table",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == table",
-					"group": "1_inline1@1"
+					"group": "3_data@1"
 				},
 				{
-					"command": "mysql.data.export",
+					"command": "jenishbh.data.export",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(table|view)$/",
-					"group": "1_inline1@2"
+					"group": "3_data@2"
 				},
 				{
-					"command": "mysql.struct.export",
+					"command": "jenishbh.struct.export",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem =~ /^(table|view)$/",
-					"group": "1_inline1@3"
+					"group": "3_data@3"
 				},
 				{
-					"command": "mysql.table.truncate",
+					"command": "jenishbh.table.truncate",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == table",
 					"group": "2_mysql@1"
 				},
 				{
-					"command": "mysql.table.drop",
+					"command": "jenishbh.table.drop",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == table",
 					"group": "2_mysql@2"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "jenishbh.refresh",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == tableGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.table",
+					"command": "jenishbh.template.table",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == tableGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.column.up",
+					"command": "jenishbh.column.up",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == column",
 					"group": "inline@0"
 				},
 				{
-					"command": "mysql.column.down",
+					"command": "jenishbh.column.down",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == column",
 					"group": "inline@2"
 				},
 				{
-					"command": "mysql.column.drop",
+					"command": "jenishbh.column.drop",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == column",
 					"group": "3_mysql@1"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "jenishbh.refresh",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == viewGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.view",
+					"command": "jenishbh.template.view",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == viewGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.delete.view",
+					"command": "jenishbh.delete.view",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == view",
 					"group": "1_mysql@1"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "jenishbh.refresh",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == procedureGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.procedure",
+					"command": "jenishbh.template.procedure",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == procedureGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.delete.procedure",
+					"command": "jenishbh.delete.procedure",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == procedure",
 					"group": "2_mysql@1"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "jenishbh.refresh",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == functionGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.function",
+					"command": "jenishbh.template.function",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == functionGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.delete.function",
+					"command": "jenishbh.delete.function",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == function",
 					"group": "1_mysql@1"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "jenishbh.refresh",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == triggerGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.trigger",
+					"command": "jenishbh.template.trigger",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == triggerGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.delete.trigger",
+					"command": "jenishbh.delete.trigger",
 					"when": "view =~ /jenishbh.+?ql/ && viewItem == trigger",
 					"group": "1_mysql@1"
 				},
 				{
-					"command": "mysql.connection.terminal",
+					"command": "jenishbh.connection.terminal",
 					"when": "view == github.jenishbh.nosql && viewItem == redisConnection",
 					"group": "inline@1"
 				},
 				{
-					"command": "mysql.redis.connection.status",
+					"command": "jenishbh.redis.connection.status",
 					"when": "view == github.jenishbh.nosql && viewItem == redisConnection",
 					"group": "connection"
 				},
 				{
-					"command": "mysql.redis.key.del",
+					"command": "jenishbh.redis.key.del",
 					"when": "view == github.jenishbh.nosql && viewItem =~ /^(redisKey|redisFolder)$/",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.connection.delete",
-					"when": "view == github.jenishbh.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
+					"command": "jenishbh.connection.delete",
+					"when": "view == github.jenishbh.nosql && viewItem =~ /(sshConnection|ftpConnection|s3Connection)/",
 					"group": "inline@0"
 				},
 				{
-					"command": "mysql.connection.terminal",
+					"command": "jenishbh.connection.terminal",
 					"when": "view == github.jenishbh.nosql && viewItem == sshConnection",
 					"group": "inline@1"
 				},
 				{
-					"command": "mysql.ssh.host.copy",
-					"when": "view == github.jenishbh.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
+					"command": "jenishbh.ssh.host.copy",
+					"when": "view == github.jenishbh.nosql && viewItem =~ /(sshConnection|ftpConnection|s3Connection)/",
 					"group": "0_connection@-2"
 				},
 				{
-					"command": "mysql.ssh.forward.port",
+					"command": "jenishbh.ssh.forward.port",
 					"when": "view == github.jenishbh.nosql && viewItem == sshConnection",
 					"group": "1_nosql@0"
 				},
 				{
-					"command": "mysql.ssh.socks.port",
+					"command": "jenishbh.ssh.socks.port",
 					"when": "view == github.jenishbh.nosql && viewItem == sshConnection",
 					"group": "1_nosql@1"
 				},
 				{
-					"command": "mysql.ssh.file.new",
+					"command": "jenishbh.ssh.file.new",
 					"when": "view == github.jenishbh.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "2_connection@2"
 				},
 				{
-					"command": "mysql.ssh.folder.new",
+					"command": "jenishbh.ssh.folder.new",
 					"when": "view == github.jenishbh.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "2_connection@4"
 				},
 				{
-					"command": "mysql.ssh.path.copy",
+					"command": "jenishbh.ssh.path.copy",
 					"when": "view == github.jenishbh.nosql && viewItem =~ /(folder|file|link)/",
 					"group": "ssh@1"
 				},
 				{
-					"command": "mysql.ssh.folder.open",
+					"command": "jenishbh.ssh.folder.open",
 					"when": "view == github.jenishbh.nosql && viewItem == folder",
 					"group": "ssh@2"
 				},
 				{
-					"command": "mysql.ssh.file.new",
+					"command": "jenishbh.ssh.file.new",
 					"when": "view == github.jenishbh.nosql && viewItem =~ /(folder|ftpFolder)/",
 					"group": "folder@0"
 				},
 				{
-					"command": "mysql.ssh.folder.new",
+					"command": "jenishbh.ssh.folder.new",
 					"when": "view == github.jenishbh.nosql && viewItem =~ /(folder|ftpFolder)/",
 					"group": "folder@1"
 				},
 				{
-					"command": "mysql.ssh.file.upload",
+					"command": "jenishbh.ssh.file.upload",
 					"when": "view == github.jenishbh.nosql && viewItem =~ /(folder|ftpFolder)/",
 					"group": "inline@-2"
 				},
 				{
-					"command": "mysql.ssh.file.delete",
+					"command": "jenishbh.ssh.file.delete",
 					"when": "view == github.jenishbh.nosql && viewItem =~ /^(folder|ftpFolder|file|ftpFile|redisFolder)$/",
 					"group": "folder@4"
 				},
 				{
-					"command": "mysql.ssh.file.download",
+					"command": "jenishbh.ssh.file.download",
 					"when": "view == github.jenishbh.nosql && viewItem =~ /(folder|file|ftpFile)/",
 					"group": "file@1"
 				},
 				{
-					"command": "mysql.ssh.file.download",
+					"command": "jenishbh.ssh.file.download",
 					"when": "view == github.jenishbh.nosql && viewItem =~ /(file|ftpFile)/",
 					"group": "inline@1"
 				}
@@ -966,60 +998,95 @@
 			"type": "object",
 			"title": "%config.title%",
 			"properties": {
-				"database-client.binaryPath": {
+				"database-client-jenishbh.binaryPath": {
 					"type": "string",
 					"default": "",
 					"description": "Folder containing external command line tools (mysql, mysqldump, psql, pg_dump, mongo, mongoimport, redis-cli, sqlite3). Binaries here take priority over PATH. This extension never downloads binaries - install them yourself, place them in this folder, then run Database Client: Check External Tools."
 				},
-				"database-client.defaultSelectLimit": {
+				"database-client-jenishbh.defaultSelectLimit": {
 					"type": "integer",
 					"default": 100,
 					"description": "%config.defaultSelectLimit%"
 				},
-				"database-client.highlightSQLBlock": {
+				"database-client-jenishbh.highlightSQLBlock": {
 					"type": "boolean",
 					"default": false,
 					"description": "Highlight SQL Code block."
 				},
-				"database-client.preferConnectionName": {
+				"database-client-jenishbh.preferConnectionName": {
 					"type": "boolean",
 					"default": true,
 					"description": "%config.preferConnectionName%"
 				},
-				"database-client.disableSqlCodeLen": {
+				"database-client-jenishbh.disableSqlCodeLen": {
 					"type": "boolean",
 					"default": false,
 					"description": "Disable Sql Code lens."
 				},
-				"database-client.showUser": {
+				"database-client-jenishbh.showUser": {
 					"type": "boolean",
 					"default": false,
 					"description": "Show user on tree view."
 				},
-				"database-client.showView": {
+				"database-client-jenishbh.showView": {
 					"type": "boolean",
 					"default": true,
 					"description": "Show view on tree view."
 				},
-				"database-client.showQuery": {
+				"database-client-jenishbh.showQuery": {
 					"type": "boolean",
 					"default": false,
 					"description": "Show query on tree view."
 				},
-				"database-client.showProcedure": {
+				"database-client-jenishbh.showProcedure": {
 					"type": "boolean",
 					"default": true,
 					"description": "Show procedure on tree view."
 				},
-				"database-client.showFunction": {
+				"database-client-jenishbh.showFunction": {
 					"type": "boolean",
 					"default": true,
 					"description": "Show function on tree view."
 				},
-				"database-client.showTrigger": {
+				"database-client-jenishbh.showTrigger": {
 					"type": "boolean",
 					"default": false,
 					"description": "Show trigger on tree view."
+				},
+				"database-client-jenishbh.executeCursorSQLByShortcut": {
+					"type": "boolean",
+					"default": true,
+					"description": "Run the statement at the cursor when nothing is selected."
+				},
+				"database-client-jenishbh.enableFlexibleSQLParser": {
+					"type": "boolean",
+					"default": true,
+					"description": "Split statements by delimiter blocks rather than plain semicolons."
+				},
+				"database-client-jenishbh.splitEditorWhenQuery": {
+					"type": "boolean",
+					"default": true,
+					"description": "Split the editor when running a query."
+				},
+				"database-client-jenishbh.openResultsAsVertically": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show query results below the editor instead of beside it."
+				},
+				"database-client-jenishbh.autoPagingSQL": {
+					"type": "boolean",
+					"default": true,
+					"description": "Append paging clauses to SELECT statements automatically."
+				},
+				"database-client-jenishbh.autoGetTableCount": {
+					"type": "boolean",
+					"default": true,
+					"description": "Fetch the total row count when viewing table data. May be slow on very large tables."
+				},
+				"database-client-jenishbh.enableSQLVariable": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable :name and $name placeholders in SQL."
 				}
 			}
 		}
@@ -1067,6 +1134,7 @@
 		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
+		"@aws-sdk/client-s3": "^3.1117.0",
 		"@exasol/exasol-driver-ts": "^0.3.0",
 		"@types/ws": "^8.18.0",
 		"axios": "^1.19.0",

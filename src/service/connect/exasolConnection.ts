@@ -113,20 +113,20 @@ export class ExasolConnection extends IConnection {
                             event.emit("result", this.convertToDump(row), rows.length === i);
                         }
                     } else {
-                        // 将结果转换为标准格式
+                        // normalise the result into the shape the extension expects
                         const fields = columns.map(col => ({
                             name: col.name,
                             dataType: col.dataType
                         }));
                         
-                        // 如果是非 SELECT 语句
+                        // non SELECT statement
                         if (!columns.length) {
                             callback(null, { affectedRows: rows.length });
                         } else {
-                            // 将行数据转换为对象格式，并处理特殊的 schema 查询
+                            // turn rows into objects, with a special case for schema queries
                             const formattedRows = rows.map((row, rowIndex) => {
                                 const obj: { [key: string]: any } = {};
-                                // 处理数组格式的行数据
+                                // rows arriving as arrays
                                 if (Array.isArray(row)) {
                                     columns.forEach((col, colIndex) => {
                                         const value = row[colIndex];
@@ -154,7 +154,7 @@ export class ExasolConnection extends IConnection {
                                         }
                                     });
                                 } else {
-                                    // 处理对象格式的行数据
+                                    // rows arriving as objects
                                     if (row.SCHEMA_NAME) {
                                         obj.schema = row.SCHEMA_NAME;
                                         obj.Database = row.SCHEMA_NAME;
@@ -191,7 +191,7 @@ export class ExasolConnection extends IConnection {
                                 return obj;
                             });
                             
-                            // 如果是查询 schema 列表，确保每个结果都有 schema 字段
+                            // when listing schemas, make sure every row carries a schema field
                             if (sql.includes('SYS.EXA_SCHEMAS')) {
                                 Console.log('[Exasol] Schema list: ' + JSON.stringify(formattedRows));
                             }

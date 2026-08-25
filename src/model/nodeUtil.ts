@@ -15,7 +15,7 @@ export abstract class NodeUtil {
             node.__proto__ = Node.prototype
         }
         if (node.dialect && !(node.dialect instanceof SqlDialect)) {
-            node.dialect = ServiceManager.getDialect(node.dbType)
+            node.dialect = ServiceManager.getDialect(node.dbType, node.jdbcUrl)
         }
         return node;
     }

@@ -4,6 +4,7 @@ import ElementUI from 'element-ui';
 import locale from 'element-ui/lib/locale/lang/en'
 import VueRouter from 'vue-router'
 import UmyTable from 'umy-table'
+import umyLocale from 'umy-table/lib/locale/lang/en'
 
 import 'umy-table/lib/theme-chalk/index.css';
 import '@/../public/theme/auto.css'
@@ -12,7 +13,7 @@ import "tailwindcss/tailwind.css"
 
 Vue.use(VueRouter)
 Vue.use(ElementUI, { locale });
-Vue.use(UmyTable);
+Vue.use(UmyTable, { locale: umyLocale });
 
 Vue.config.productionTip = false
 
@@ -20,6 +21,7 @@ import connect from "./connect";
 import status from "./status";
 import design from "./design";
 import structDiff from "./structDiff";
+import er from "./er";
 import keyView from "./redis/keyView";
 import terminal from "./redis/terminal";
 import redisStatus from "./redis/redisStatus";
@@ -32,6 +34,7 @@ const router = new VueRouter({
     { path: '/status', component: status, name: 'status' },
     { path: '/design', component: design, name: 'design' },
     { path: '/structDiff', component: structDiff, name: 'structDiff' },
+    { path: '/er', component: er, name: 'er' },
     // redis
     { path: '/keyView', component: keyView, name: 'keyView' },
     { path: '/terminal', component: terminal, name: 'terminal' },

@@ -128,17 +128,17 @@ export class ElasticCompletionItemProvider implements vscode.CompletionItemProvi
     }
 
     private async listIndices(): Promise<string[]> {
-        // 返回所有索引
+        // all indices
         return []
     }
     private async listAliases(): Promise<string[]> {
-        // 返回所有索引别名
+        // all index aliases
         // /_cat/aliases
         return []
     }
 
     private async listRepositories(): Promise<string[]> {
-        // 返回所有快照仓库
+        // all snapshot repositories
         // /_snapshot
         return []
     }

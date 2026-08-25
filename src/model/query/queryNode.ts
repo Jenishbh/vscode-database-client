@@ -16,7 +16,7 @@ export class QueryNode extends Node {
         this.init(parent)
         this.collapsibleState = TreeItemCollapsibleState.None
         this.command = {
-            command: "mysql.query.open",
+            command: "jenishbh.query.open",
             title: "Open Query",
             arguments: [this, true],
         }

@@ -20,6 +20,8 @@ import { SqliteConnection } from "./connect/sqliteConnection";
 import { Console } from "@/common/Console";
 import { MongoConnection } from "./connect/mongoConnection";
 import { ExasolConnection } from './connect/exasolConnection';
+import { JdbcConnection } from './connect/jdbcConnection';
+import { S3Connection } from './connect/s3Connection';
 
 interface ConnectionWrapper {
     connection: IConnection;
@@ -158,6 +160,10 @@ export class ConnectionManager {
                 return new FTPConnection(opt);
             case DatabaseType.EXASOL:
                 return new ExasolConnection(opt);
+            case DatabaseType.JDBC:
+                return new JdbcConnection(opt);
+            case DatabaseType.S3:
+                return new S3Connection(opt);
         }
         return new MysqlConnection(opt)
     }

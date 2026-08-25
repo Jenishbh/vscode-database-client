@@ -4,6 +4,7 @@ import { EsConnectionNode } from "@/model/es/model/esConnectionNode";
 import { FTPConnectionNode } from "@/model/ftp/ftpConnectionNode";
 import { InfoNode } from "@/model/other/infoNode";
 import { RedisConnectionNode } from "@/model/redis/redisConnectionNode";
+import { S3ConnectionNode } from "@/model/s3/s3ConnectionNode";
 import { SSHConnectionNode } from "@/model/ssh/sshConnectionNode";
 import * as vscode from "vscode";
 import { CacheKey, DatabaseType } from "../common/constants";
@@ -95,7 +96,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
     private getKeyByNode(connectionNode: Node): string {
         const dbType = connectionNode.dbType;
-        if (dbType == DatabaseType.ES || dbType == DatabaseType.REDIS || dbType == DatabaseType.SSH || dbType == DatabaseType.FTP || dbType == DatabaseType.MONGO_DB) {
+        if (dbType == DatabaseType.ES || dbType == DatabaseType.REDIS || dbType == DatabaseType.SSH || dbType == DatabaseType.FTP || dbType == DatabaseType.MONGO_DB || dbType == DatabaseType.S3) {
             return CacheKey.NOSQL_CONNECTION;
         }
         return CacheKey.DATBASE_CONECTIONS;
@@ -131,7 +132,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
     }
 
     private getNode(connectInfo: Node, key: string, global: boolean, connectionKey: string) {
-        // 兼容老版本的连接信息
+        // tolerate connection info saved by older versions
         if (!connectInfo.dbType) connectInfo.dbType = DatabaseType.MYSQL
         let node: Node;
         if (connectInfo.dbType == DatabaseType.ES) {
@@ -143,6 +144,8 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
             node = new SSHConnectionNode(key, connectInfo, connectInfo.ssh, connectInfo.name)
         } else if (connectInfo.dbType == DatabaseType.FTP) {
             node = new FTPConnectionNode(key, connectInfo)
+        } else if (connectInfo.dbType == DatabaseType.S3) {
+            node = new S3ConnectionNode(key, connectInfo)
         } else {
             node = new ConnectionNode(key, connectInfo)
         }

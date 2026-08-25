@@ -3,7 +3,7 @@
     <div class="mb-3">
       <div class="inline-block mr-10">
         <label class="inline-block mr-5 font-bold w-14">
-          Table
+          Name
           <span class="mr-1 text-red-600">*</span>
         </label>
         <input class="w-64 field__input" required v-model="table.name" />
@@ -14,6 +14,18 @@
           <span class="mr-1 text-red-600">*</span>
         </label>
         <input class="w-64 field__input" v-model="table.comment" />
+      </div>
+      <div class="inline-block mr-10">
+        <label class="inline-block mr-5 font-bold">
+          Engine
+        </label>
+        <input class="w-32 field__input" disabled :value="designData.engine" />
+      </div>
+      <div class="inline-block mr-10">
+        <label class="inline-block mr-5 font-bold">
+          Collate
+        </label>
+        <input class="w-40 field__input" disabled :value="designData.collation" />
       </div>
       <el-button @click="rename" type="success">Update</el-button>
     </div>

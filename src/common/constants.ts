@@ -4,7 +4,7 @@ import * as path from "path";
 const extName=require("@/../package.json")
 
 export class Constants {
-    public static CONFIG_PREFIX = "database-client"
+    public static CONFIG_PREFIX = "database-client-jenishbh"
     public static RES_PATH = path.join(vscode.extensions.getExtension(`${extName.publisher}.${extName.name}`).extensionPath, "resources");
 }
 
@@ -33,8 +33,8 @@ export enum ConfigKey {
 }
 
 export enum CodeCommand {
-    RecordHistory = "mysql.history.record",
-    Refresh = "mysql.refresh"
+    RecordHistory = "jenishbh.history.record",
+    Refresh = "jenishbh.refresh"
 }
 
 export class Cursor {
@@ -52,7 +52,7 @@ export enum DatabaseType {
     MYSQL = "MySQL", PG = "PostgreSQL", SQLITE = "SQLite",
     MSSQL = "SqlServer", MONGO_DB = "MongoDB",
     ES = "ElasticSearch", REDIS = "Redis", SSH = "SSH", FTP = "FTP",
-    EXASOL = "Exasol"
+    EXASOL = "Exasol", JDBC = "JDBC", S3 = "S3"
 }
 
 export enum ModelType {
@@ -61,6 +61,10 @@ export enum ModelType {
      * ftp
      */
      FTP_CONNECTION="ftpConnection", FTP_FOLDER = 'ftpFolder', FTP_FILE = "ftpFile",FTP_Link = "ftpLink",
+    /**
+     * s3 / object storage
+     */
+     S3_CONNECTION = "s3Connection", S3_BUCKET = "s3Bucket", S3_FOLDER = "s3Folder", S3_OBJECT = "s3Object",
     /**
      * ssh
      */

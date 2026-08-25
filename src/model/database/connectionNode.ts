@@ -1,6 +1,7 @@
 import { Console } from "@/common/Console";
 import { Global } from "@/common/global";
 import * as path from "path";
+import { existsSync } from "fs";
 import * as vscode from "vscode";
 import { ConfigKey, Constants, DatabaseType, ModelType } from "../../common/constants";
 import { FileManager } from "../../common/filesManager";
@@ -17,7 +18,7 @@ import { SchemaNode } from "./schemaNode";
 import { UserGroup } from "./userGroup";
 
 /**
- * TODO: 切换为使用连接池, 现在会导致消费队列不正确, 导致视图失去响应
+ * TODO: move to a connection pool; today the consume queue can go wrong and the view stops responding
  */
 export class ConnectionNode extends Node implements CopyAble {
 
@@ -37,7 +38,13 @@ export class ConnectionNode extends Node implements CopyAble {
             preferName ? this.label = parent.name : this.description = parent.name;
         }
         // https://www.iloveimg.com/zh-cn/resize-image/resize-svg
-        if (this.dbType == DatabaseType.PG) {
+        // A connection remembers the server type the user picked, so engines
+        // that share a driver (MariaDB on MySQL, everything on JDBC) still get
+        // their own icon instead of the driver's.
+        const typeIcon = ConnectionNode.iconFor(this.serverType);
+        if (typeIcon) {
+            this.iconPath = typeIcon;
+        } else if (this.dbType == DatabaseType.PG) {
             this.iconPath = path.join(Constants.RES_PATH, "icon/pg_server.svg");
         } else if (this.dbType == DatabaseType.MSSQL) {
             this.iconPath = path.join(Constants.RES_PATH, "icon/mssql_server.png");
@@ -60,6 +67,21 @@ export class ConnectionNode extends Node implements CopyAble {
         } catch (error) {
             Console.log(error)
         }
+    }
+
+    /** Icon file for a server type label, or null when we ship none. */
+    private static iconFor(serverType: string): string {
+        if (!serverType) return null;
+        const key = serverType.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const named: { [k: string]: string } = {
+            mysql: "mysql.svg", mariadb: "mariadb.svg", postgresql: "pg_server.svg",
+            sqlite: "sqlite-icon.svg", sqlserver: "mssql_server.png", mongodb: "mongodb-icon.svg",
+            elasticsearch: "elasticsearch.svg", azuresqlserver: "azuresql.svg",
+            bigquery: "bigquery.svg", apachedoris: "doris.svg", saphana: "saphana.svg",
+        };
+        const file = named[key] || `${key}.svg`;
+        const full = path.join(Constants.RES_PATH, "icon", file);
+        return existsSync(full) ? full : null;
     }
 
     public async getChildren(isRresh: boolean = false): Promise<Node[]> {

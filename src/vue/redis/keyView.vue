@@ -46,7 +46,7 @@
 
           <span v-if='binary' class='formater-binary'>Hex</span>
           <div class="value-panel" :style="'height:'+ dynamicHeight">
-            <!-- 字符串 -->
+            <!-- string -->
             <div v-if="selectedView=='ViewerText'">
               <el-input type='textarea' :autosize="{ minRows:6}" v-model='edit.content'></el-input>
             </div>

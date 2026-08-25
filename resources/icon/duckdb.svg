@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <ellipse cx="16" cy="7" rx="11" ry="4.2" fill="#D9B300"/>
+  <path d="M5 7v18c0 2.3 4.9 4.2 11 4.2s11-1.9 11-4.2V7c0 2.3-4.9 4.2-11 4.2S5 9.3 5 7z" fill="#D9B300" opacity=".78"/>
+  <ellipse cx="16" cy="7" rx="11" ry="4.2" fill="none" stroke="#D9B300" stroke-width="1.1"/>
+  <text x="16" y="24.2" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="12.5"
+        font-weight="700" fill="#ffffff" text-anchor="middle">D</text>
+</svg>

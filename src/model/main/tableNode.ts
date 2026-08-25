@@ -30,7 +30,7 @@ export class TableNode extends Node implements CopyAble {
         this.tooltip = this.getToolTipe(meta)
         this.cacheSelf()
         this.command = {
-            command: "mysql.table.find",
+            command: "jenishbh.table.find",
             title: "Run Select Statement",
             arguments: [this, true],
         }
@@ -112,6 +112,45 @@ export class TableNode extends Node implements CopyAble {
 
 
 
+    /**
+     * Run a dialect query that may legitimately be unsupported (dialect method returns null)
+     * or may fail against the live database. Either way this must never throw -- callers
+     * (the designer's extra tabs) degrade to a message instead of erroring the whole panel.
+     */
+    private async safeList(sql: string, notSupportedMessage: string): Promise<{ rows: any[], message: string }> {
+        if (!sql) {
+            return { rows: null, message: notSupportedMessage };
+        }
+        try {
+            const rows = await this.execute<any[]>(sql);
+            return { rows: rows || [], message: null };
+        } catch (error) {
+            return { rows: null, message: error?.message || "Query failed." };
+        }
+    }
+
+    private async loadDesignDdl(): Promise<{ sql: string, message: string }> {
+        const ddlSql = this.dialect.showTableSource(this.schema, this.table);
+        if (!ddlSql) {
+            return { sql: null, message: "DDL preview is not supported for this database." };
+        }
+        try {
+            const rows = await this.execute<any[]>(ddlSql);
+            const row = rows && rows[0];
+            if (!row) {
+                return { sql: null, message: "No DDL returned by the database." };
+            }
+            let text = row['Create Table'] ?? row['sql'] ?? row[Object.keys(row)[0]];
+            text = text == null ? null : String(text);
+            if (text && this.dbType == DatabaseType.SQLITE) {
+                text = text.replace(/\\n/g, '\n');
+            }
+            return { sql: text, message: text ? null : "No DDL returned by the database." };
+        } catch (error) {
+            return { sql: null, message: error?.message || "Failed to load DDL." };
+        }
+    }
+
     public designTable() {
 
         const executeAndRefresh = async (sql: string, handler: Hanlder) => {
@@ -138,7 +177,20 @@ export class TableNode extends Node implements CopyAble {
                         }
                         return columnNode.column;
                     });
-                    handler.emit('design-data', { indexs: result, table: this.table, comment: this.meta.comment, columnList, primaryKey, dbType: this.dbType })
+                    const metaResult = await this.safeList(this.dialect.showTableMeta(this.schema, this.table), null);
+                    const meta = (metaResult.rows && metaResult.rows[0]) || {};
+                    const ddl = await this.loadDesignDdl();
+                    const foreignKeys = await this.safeList(this.dialect.showForeignKeys(this.schema, this.table), "Foreign keys are not supported for this database.");
+                    const triggers = await this.safeList(this.dialect.showTableTriggers(this.schema, this.table), "Triggers are not supported for this database.");
+                    const checks = await this.safeList(this.dialect.showChecks(this.schema, this.table), "Check constraints are not supported for this database.");
+                    handler.emit('design-data', {
+                        indexs: result, table: this.table, comment: this.meta.comment, columnList, primaryKey, dbType: this.dbType,
+                        engine: meta.engine || meta.ENGINE, collation: meta.collation || meta.COLLATION,
+                        ddl: ddl.sql, ddlMessage: ddl.message,
+                        foreignKeys: foreignKeys.rows, foreignKeysMessage: foreignKeys.message,
+                        triggers: triggers.rows, triggersMessage: triggers.message,
+                        checks: checks.rows, checksMessage: checks.message,
+                    })
                 }).on("updateTable", async ({ newTableName, newComment }) => {
                     const sql = this.dialect.updateTable({ table: this.table, newTableName, comment: this.meta.comment, newComment });
                     await executeAndRefresh(sql, handler)

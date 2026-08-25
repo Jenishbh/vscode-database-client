@@ -65,6 +65,31 @@ for (const n of ["CompletionItemKind","SymbolKind","DiagnosticSeverity","CodeAct
   real[n] = new Proxy({}, { get: () => 0 });
 }
 
+// Any vscode API we did not model returns a disposable. These harnesses exist
+// to exercise the extension, not to reimplement vscode.
+const __disp = { dispose() {} };
+function __autoObj(seed) {
+  const base = Object.assign({ dispose() {} }, seed || {});
+  return new Proxy(base, { get(t, k) {
+    if (k in t) return t[k];
+    if (typeof k !== "string") return undefined;
+    const fn = () => __disp; t[k] = fn; return fn;
+  } });
+}
+function autoStubNamespace(real) {
+  return new Proxy(real, { get(t, k) {
+    if (k in t) return t[k];
+    if (typeof k !== "string") return undefined;
+    const fn = () => __disp; t[k] = fn; return fn;
+  } });
+}
+real.window.createTreeView = () => __autoObj({ reveal: () => Promise.resolve(), visible: true, selection: [] });
+real.window.createTextEditorDecorationType = () => __autoObj({ key: "d" });
+real.languages.createDiagnosticCollection = () => __autoObj({ set() {}, delete() {} });
+for (const ns of ["window", "workspace", "languages", "commands", "debug", "tasks", "notebooks", "l10n"]) {
+  if (real[ns] && typeof real[ns] === "object") real[ns] = autoStubNamespace(real[ns]);
+}
+
 // Anything not modelled above resolves to a harmless callable/constructible stub,
 // so a missing member can never crash module loading.
 const fallback = new Proxy(function () {}, {

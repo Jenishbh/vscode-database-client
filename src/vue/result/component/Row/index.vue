@@ -49,6 +49,7 @@ export default {
     },
     filter(event, column, operation) {
       if (!operation) operation = "=";
+      const isNullCheck = operation === "IS NULL" || operation === "IS NOT NULL";
       let inputvalue = "" + (event ? event.target.value : "");
       if (this.result.dbType == "ElasticSearch") {
         this.$emit("sendToVscode", "esFilter", {
@@ -65,9 +66,10 @@ export default {
         "igm"
       );
 
-      if (inputvalue) {
-        const condition =
-          inputvalue.toLowerCase() === "null"
+      if (inputvalue || isNullCheck) {
+        const condition = isNullCheck
+          ? `${wrapByDb(column, this.result.dbType)} ${operation}`
+          : inputvalue.toLowerCase() === "null"
             ? `${column} is null`
             : `${wrapByDb(
                 column,
@@ -103,6 +105,27 @@ export default {
       }
       this.$emit("execute", filterSql + ";");
     },
+    editCell(event) {
+      const el = event.target;
+      el.focus();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    },
+    setNull(event, scope) {
+      const { row, column, rowIndex } = scope;
+      event.target.innerHTML = "<span class='null-column'>(NULL)</span>";
+      const editList = this.editList.concat([]);
+      if (!editList[rowIndex]) {
+        editList[rowIndex] = { ...row };
+        delete editList[rowIndex]._XID;
+      }
+      editList[rowIndex][column.title] = null;
+      this.$emit("sendToVscode", "dataModify");
+      this.$emit("update:editList", editList);
+    },
     onContextmenu(event, scope) {
       const { row, column } = scope;
       const name = column.title;
@@ -118,17 +141,43 @@ export default {
             divided: true,
           },
           {
-            label: `Open Edit Dialog`,
+            label: `Edit`,
+            onClick: () => {
+              this.editCell(event);
+            },
+          },
+          {
+            label: `Duplicate Rows`,
+            onClick: () => {
+              this.$emit("duplicateRows", row);
+            },
+            divided: true,
+          },
+          {
+            label: `Edit (Dialog)`,
             onClick: () => {
               this.$emit("openEditor", row, false);
             },
           },
           {
-            label: `Open Copy Dialog`,
+            label: `Copy Row (Dialog)`,
             onClick: () => {
               this.$emit("openEditor", row, true);
             },
             divided: true,
+          },
+          {
+            label: `Set NULL`,
+            onClick: () => {
+              this.setNull(event, scope);
+            },
+            divided: true,
+          },
+          {
+            label: `Local Filter by ${name} = '${value}'`,
+            onClick: () => {
+              this.$emit("localFilter", name, value);
+            },
           },
           {
             label: `Filter by ${name} = '${value}'`,
@@ -138,7 +187,6 @@ export default {
           },
           {
             label: "Filter by",
-            divided: true,
             children: [
               {
                 label: `Filter by ${name} > '${value}'`,
@@ -167,17 +215,15 @@ export default {
                 divided: true,
               },
               {
-                label: `Filter by ${name} LIKE '%${value}%'`,
+                label: `Filter by ${name} IS NULL`,
                 onClick: () => {
-                  event.target.value = `%${value}%`;
-                  this.filter(event, name, "LIKE");
+                  this.filter(event, name, "IS NULL");
                 },
               },
               {
-                label: `Filter by ${name} NOT LIKE '%${value}%'`,
+                label: `Filter by ${name} IS NOT NULL`,
                 onClick: () => {
-                  event.target.value = `%${value}%`;
-                  this.filter(event, name, "NOT LIKE");
+                  this.filter(event, name, "IS NOT NULL");
                 },
               },
             ],

@@ -191,7 +191,7 @@ export class QueryPage {
             tableName = tableName.split(".")[1]
         }
 
-        // mysql直接从结果集拿
+        // mysql reads this straight off the result set
         const fields = queryParam.res.fields
         if (fields && fields[0]?.orgTable) {
             tableName = fields[0].orgTable;

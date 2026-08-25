@@ -118,6 +118,34 @@ export default {
         this.$message("Not any input, insert fail!");
       }
     },
+    buildInsertSql(row) {
+      const copyModel = { ...row };
+      if (this.primaryKey) {
+        copyModel[this.primaryKey] = null;
+      }
+      if (this.dbType == "ElasticSearch") {
+        delete copyModel._XID;
+        return `POST /${this.table}/_doc\n` + JSON.stringify(copyModel) + "\n";
+      } else if (this.dbType == "MongoDB") {
+        delete copyModel._id;
+        return `db('${this.database}').collection("${this.table}").insertOne(${JSON.stringify(copyModel)})\n`;
+      }
+      let columns = "";
+      let values = "";
+      for (const key in copyModel) {
+        if (this.getTypeByColumn(key) == null) continue;
+        const newEle = copyModel[key];
+        if (newEle != null) {
+          columns += `${wrapByDb(key, this.dbType)},`;
+          values += `${this.wrapQuote(this.getTypeByColumn(key), newEle)},`;
+        }
+      }
+      if (!values) return "";
+      return `INSERT INTO ${this.table}(${columns.replace(
+        /,$/,
+        ""
+      )}) VALUES(${values.replace(/,$/, "")});`;
+    },
     buildUpdateSql(currentNew, oldRow) {
        if (this.dbType == "ElasticSearch") {
         return this.confirmUpdateEs(currentNew);

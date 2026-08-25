@@ -47,5 +47,25 @@ export abstract class SqlDialect {
     dropTriggerTemplate(name: string): string {
         return `DROP TRIGGER IF EXISTS ${name}`
     }
+    /**
+     * Table-level engine/collation info for the designer header.
+     * Return null when the dialect has no such concept / cannot express it portably;
+     * the designer will then just leave those fields blank instead of erroring.
+     */
+    showTableMeta(database: string, table: string): string { return null; }
+    /**
+     * Foreign keys declared on a table, for the designer's Foreign Key tab.
+     * Return null when not supported for this dialect.
+     */
+    showForeignKeys(database: string, table: string): string { return null; }
+    /**
+     * Triggers scoped to a single table, for the designer's Trigger tab.
+     * (Distinct from showTriggers(), which lists every trigger in the schema for the tree view.)
+     */
+    showTableTriggers(database: string, table: string): string { return null; }
+    /**
+     * Check constraints declared on a table, for the designer's Check tab.
+     */
+    showChecks(database: string, table: string): string { return null; }
 }
 

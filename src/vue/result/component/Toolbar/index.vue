@@ -8,6 +8,7 @@
     <el-button icon="el-icon-delete" style="color:#f56c6c" @click="$emit('deleteConfirm');" title="delete"></el-button>
     <el-button icon="el-icon-bottom" @click="$emit('export');" style="color:#4ba3ff;" title="Export"></el-button>
     <el-button icon="el-icon-caret-right" title="Execute Sql" style="color: #54ea54;margin-left:0;" @click="$emit('run');"></el-button>
+    <SegmentedControl :value="viewMode" @input="$emit('update:viewMode',$event)" :options="viewModeOptions" style="margin-left:8px;vertical-align:middle;" title="Grid View Mode" />
     <div style="display:inline-block;font-size:14px;padding-left: 8px;" class="el-pagination__total">
       Cost: {{costTime}}ms
     </div>
@@ -19,11 +20,18 @@
 </template>
 
 <script>
+import SegmentedControl from "../SegmentedControl.vue";
 export default {
-  props: ["costTime", "search", "showFullBtn", "page"],
+  components: { SegmentedControl },
+  props: ["costTime", "search", "showFullBtn", "page", "viewMode"],
   data() {
     return {
       searchInput: null,
+      viewModeOptions: [
+        { label: "Default", value: "default" },
+        { label: "Reverse", value: "reverse" },
+        { label: "JSON", value: "json" },
+      ],
     };
   },
   methods: {
@@ -35,7 +43,7 @@ export default {
   },
   watch: {
     searchInput: function () {
-      this.$emit("update:search", this.searchInput); // 将子组件的输入框的值传递给父组件 父组件需要用.sync
+      this.$emit("update:search", this.searchInput); // pass the child input value up; the parent binds it with .sync
     },
   },
 };

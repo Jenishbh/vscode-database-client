@@ -95,12 +95,33 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
      * using when ssh tunnel
      */
     public esUrl: string;
+    public group: string;
+    public socksHost: string;
+    public socksPort: number;
+    public socksUser: string;
+    public socksPassword: string;
+    public httpProxyHost: string;
+    public httpProxyPort: number;
+    public httpProxyUser: string;
+    public httpProxyPassword: string;
+    public serverType: string;
+    public jdbcUrl: string;
+    public jdbcDriver: string;
 
     /**
      * encoding, ftp only
      */
     public encoding: string;
     public showHidden: boolean;
+
+    /**
+     * s3 / object storage only
+     */
+    public s3Endpoint?: string;
+    public s3AccessKey?: string;
+    public s3SecretKey?: string;
+    public s3Region?: string;
+    public s3ForcePathStyle?: boolean;
 
     constructor(public label: string) {
         super(label)
@@ -125,6 +146,11 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         this.esToken = source.esToken
         this.encoding = source.encoding
         this.showHidden = source.showHidden
+        this.s3Endpoint = source.s3Endpoint
+        this.s3AccessKey = source.s3AccessKey
+        this.s3SecretKey = source.s3SecretKey
+        this.s3Region = source.s3Region
+        this.s3ForcePathStyle = source.s3ForcePathStyle
         this.connectionKey = source.connectionKey
         this.global = source.global
         this.dbType = source.dbType
@@ -141,6 +167,18 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         this.encrypt = source.encrypt
         this.instanceName = source.instanceName
         this.dbPath = source.dbPath
+        this.group = source.group
+        this.socksHost = source.socksHost
+        this.socksPort = source.socksPort
+        this.socksUser = source.socksUser
+        this.socksPassword = source.socksPassword
+        this.httpProxyHost = source.httpProxyHost
+        this.httpProxyPort = source.httpProxyPort
+        this.httpProxyUser = source.httpProxyUser
+        this.httpProxyPassword = source.httpProxyPassword
+        this.serverType = source.serverType
+        this.jdbcUrl = source.jdbcUrl
+        this.jdbcDriver = source.jdbcDriver
         this.domain = source.domain
         this.authType = source.authType
         this.disable = source.disable
@@ -151,10 +189,10 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         if (!this.context) this.context = source.context
         // init dialect
         if (!this.dialect && this.dbType != DatabaseType.REDIS) {
-            this.dialect = ServiceManager.getDialect(this.dbType)
+            this.dialect = ServiceManager.getDialect(this.dbType, this.jdbcUrl)
         }
         if (this.disable) {
-            this.command = { command: "mysql.connection.open", title: "Open Connection", arguments: [this] }
+            this.command = { command: "jenishbh.connection.open", title: "Open Connection", arguments: [this] }
         }
         this.key = source.key || this.key;
         this.initUid();

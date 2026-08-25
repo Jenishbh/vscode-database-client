@@ -118,5 +118,17 @@ export class MongoDialect implements SqlDialect{
     dropTriggerTemplate(name: string): string {
         throw new Error("Method not implemented.");
     }
+    showTableMeta(database: string, table: string): string {
+        return null;
+    }
+    showForeignKeys(database: string, table: string): string {
+        return null;
+    }
+    showTableTriggers(database: string, table: string): string {
+        return null;
+    }
+    showChecks(database: string, table: string): string {
+        return null;
+    }
 
 }

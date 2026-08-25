@@ -4,6 +4,14 @@ export class ExportContext {
     dbOption: Node;
     type: ExportType;
     withOutLimit: boolean;
+    /**
+     * export xlsx with the sql written to a separate sheet
+     */
+    sheetSql?: boolean;
+    /**
+     * open the exported content in a new editor tab instead of saving to a file
+     */
+    openInEditor?: boolean;
     table:string;
     sql: string;
     /**
@@ -12,7 +20,7 @@ export class ExportContext {
     request?: any;
     exportPath: string;
     /**
-     * intenel: fields 
+     * intenel: fields
      */
     fields: any[];
     /**
@@ -26,5 +34,5 @@ export class ExportContext {
 }
 
 export enum ExportType {
-    excel = "xlsx", sql = "sql", csv = "csv",json = "json"
+    excel = "xlsx", sql = "sql", csv = "csv",json = "json", markdown = "md"
 }

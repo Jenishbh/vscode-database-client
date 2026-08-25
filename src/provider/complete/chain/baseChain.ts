@@ -6,7 +6,7 @@ import { NodeFinder } from "../nodeFinder";
 
 export abstract class BaseChain implements ComplectionChain {
     protected needStop: boolean = false;
-    // TODO 1: 分离聚合函数 2:提示是需要加上自定义函数
+    // TODO 1: split out aggregate functions 2: include user defined functions in the hints
     protected functionList: CompletionItem[] = this.strToComplection(["CHAR_LENGTH", "CONCAT", "NOW", "DATE_ADD", "DATE_SUB", "MAX", "COUNT", "MIN", "SUM", "AVG", "LENGTH", "IF", "IFNULL", "MD5", "SHA", "CURRENT_DATE", "DATE_FORMAT", "CAST", "TRIM", "LAST_INSERT_ID", "MOD"], CompletionItemKind.Function, '($1)');
     abstract getComplection(context: ComplectionContext): CompletionItem[] | Promise<CompletionItem[]>;
     stop(): boolean {

@@ -39,6 +39,7 @@ import { HighlightCreator } from "@/provider/codelen/highlightCreator";
 import { SQLSymbolProvide } from "@/provider/sqlSymbolProvide";
 import { MysqlDumpService } from "./dump/mysqlDumpService";
 import { ExasolDialect } from './dialect/exasolDialect';
+import { JdbcDialect } from "./dialect/jdbcDialect";
 
 export class ServiceManager {
 
@@ -139,7 +140,7 @@ export class ServiceManager {
         return new MysqlImportService()
     }
 
-    public static getDialect(dbType: DatabaseType): SqlDialect {
+    public static getDialect(dbType: DatabaseType, jdbcUrl?: string): SqlDialect {
         if (!dbType) dbType = DatabaseType.MYSQL
         switch (dbType) {
             case DatabaseType.MSSQL:
@@ -152,6 +153,8 @@ export class ServiceManager {
                 return new EsDialect();
             case DatabaseType.MONGO_DB:
                 return new MongoDialect();
+            case DatabaseType.JDBC:
+                return new JdbcDialect(jdbcUrl);
             case DatabaseType.EXASOL:
                 return new ExasolDialect();
         }
