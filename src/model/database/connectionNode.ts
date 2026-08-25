@@ -106,7 +106,7 @@ export class ConnectionNode extends Node implements CopyAble {
 
         // Oracle, like MySQL, has no catalog above the schema: a connection targets one
         // service and its schemas are users.
-        const hasCatalog = this.dbType != DatabaseType.MYSQL && this.dbType != DatabaseType.ORACLE && this.contextValue == ModelType.CONNECTION;
+        const hasCatalog = this.dbType != DatabaseType.MYSQL && this.dbType != DatabaseType.ORACLE && this.dbType != DatabaseType.CLICKHOUSE && this.contextValue == ModelType.CONNECTION;
         const sql = hasCatalog ? this.dialect.showDatabases() : this.dialect.showSchemas();
         return this.execute<any[]>(sql)
             .then((databases) => {

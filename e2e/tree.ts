@@ -62,7 +62,7 @@ async function descend(provider: DbTreeDataProvider, node: any, depth: number): 
   const bad = kids.find(isError);
   if (bad) {
     // an informational "nothing here" node is normal, not a failure
-    if (/no files|no data|empty/i.test(label(bad))) return " > (empty)";
+    if (/no files|no data|empty|no table/i.test(label(bad))) return " > (empty)";
     return " > ERROR: " + label(bad);
   }
   if (kids[0] && kids[0].__timeout) return " > TIMEOUT";

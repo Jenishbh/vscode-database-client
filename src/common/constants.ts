@@ -52,7 +52,7 @@ export enum DatabaseType {
     MYSQL = "MySQL", PG = "PostgreSQL", SQLITE = "SQLite",
     MSSQL = "SqlServer", MONGO_DB = "MongoDB",
     ES = "ElasticSearch", REDIS = "Redis", SSH = "SSH", FTP = "FTP",
-    EXASOL = "Exasol", JDBC = "JDBC", S3 = "S3", ORACLE = "Oracle"
+    EXASOL = "Exasol", JDBC = "JDBC", S3 = "S3", ORACLE = "Oracle", CLICKHOUSE = "ClickHouse"
 }
 
 export enum ModelType {

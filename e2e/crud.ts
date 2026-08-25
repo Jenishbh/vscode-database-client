@@ -11,7 +11,9 @@ import type { Node } from "@/model/interface/node";
 import type { IConnection } from "@/service/connect/connection";
 import { OracleConnection } from "@/service/connect/oracleConnection";
 import { MSSqlConnnection } from "@/service/connect/mssqlConnection";
+import { ClickHouseConnection } from "@/service/connect/clickHouseConnection";
 import { OracleDialect } from "@/service/dialect/oracleDialect";
+import { ClickHouseDialect } from "@/service/dialect/clickHouseDialect";
 import { MssqlDIalect } from "@/service/dialect/mssqlDIalect";
 import type { SqlDialect } from "@/service/dialect/sqlDialect";
 
@@ -40,6 +42,8 @@ type Case = {
   make: () => IConnection;
   dialect: SqlDialect;
   ddl: { drop: string; create: string };
+  /** engines whose UPDATE/DELETE are not plain DML (ClickHouse mutations) */
+  dml?: { update: string; del: string };
 };
 
 const cases: Case[] = [
@@ -68,6 +72,23 @@ const cases: Case[] = [
     ddl: {
       drop: `IF OBJECT_ID('dbc_crud','U') IS NOT NULL DROP TABLE dbc_crud`,
       create: `CREATE TABLE dbc_crud (id INT PRIMARY KEY, name VARCHAR(50))`,
+    },
+  },
+  {
+    name: "ClickHouse (native/http)",
+    schema: "default",
+    dialect: new ClickHouseDialect(),
+    make: () => new ClickHouseConnection({
+      host: "127.0.0.1", port: 18123, user: "default", password: "Test_1234",
+      database: "default", requestTimeout: 30000,
+    } as Node),
+    ddl: {
+      drop: `DROP TABLE IF EXISTS dbc_crud`,
+      create: `CREATE TABLE dbc_crud (id UInt32, name String) ENGINE = MergeTree ORDER BY id`,
+    },
+    dml: {
+      update: `ALTER TABLE dbc_crud UPDATE name = 'ALPHA' WHERE id = 1`,
+      del: `ALTER TABLE dbc_crud DELETE WHERE id = 2`,
     },
   },
 ];
@@ -113,13 +134,13 @@ async function run(c: Case) {
     record(c.name, "read", readOk, `${r.length} rows`);
     console.log(`  read     ${readOk ? "OK" : "FAIL"} (${r.length} rows: ${r.map((x: any) => cell(x, "name")).join(", ")})`);
 
-    await query(conn, `UPDATE dbc_crud SET name = 'ALPHA' WHERE id = 1`);
+    await query(conn, c.dml ? c.dml.update : `UPDATE dbc_crud SET name = 'ALPHA' WHERE id = 1`);
     r = await query(conn, `SELECT name FROM dbc_crud WHERE id = 1`);
     const updOk = String(cell(r[0], "name")) === "ALPHA";
     record(c.name, "update", updOk, String(cell(r[0], "name")));
     console.log(`  update   ${updOk ? "OK" : "FAIL"} (${cell(r[0], "name")})`);
 
-    await query(conn, `DELETE FROM dbc_crud WHERE id = 2`);
+    await query(conn, c.dml ? c.dml.del : `DELETE FROM dbc_crud WHERE id = 2`);
     r = await query(conn, `SELECT COUNT(*) AS N FROM dbc_crud`);
     const delOk = Number(cell(r[0], "n")) === 1;
     record(c.name, "delete", delOk, String(cell(r[0], "n")));

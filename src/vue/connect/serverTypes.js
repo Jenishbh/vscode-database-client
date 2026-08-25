@@ -25,10 +25,7 @@ export const PRIMARY = [
     label: "Kingbase", icon: "🗝️", kind: "jdbc", bundled: false,
     driver: "com.kingbase8.Driver", url: "jdbc:kingbase8://HOST:54321/DATABASE",
   },
-  {
-    label: "ClickHouse", icon: "📊", kind: "jdbc", bundled: true,
-    driver: "com.clickhouse.jdbc.ClickHouseDriver", url: "jdbc:ch://HOST:8123/default?compress=0",
-  },
+  { label: "ClickHouse", icon: "📊", kind: "native", dbType: "ClickHouse", port: 8123 },
   { label: "JDBC", icon: "☕", kind: "jdbc", bundled: true, driver: "", url: "" },
 ];
 
