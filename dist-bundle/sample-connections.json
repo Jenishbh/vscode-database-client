@@ -1,0 +1,64 @@
+{
+  "database": {
+    "global": {
+      "1800000000001": {
+        "key": "1800000000001",
+        "name": "Oracle 23 (native/thin)",
+        "dbType": "Oracle",
+        "global": true,
+        "connectionKey": "mysql.connections",
+        "connectTimeout": 15000,
+        "requestTimeout": 30000,
+        "usingSSH": false,
+        "disable": false,
+        "host": "127.0.0.1",
+        "port": 11521,
+        "user": "system",
+        "password": "Test_1234",
+        "serviceName": "FREEPDB1",
+        "database": "SYSTEM",
+        "serverType": "Oracle"
+      },
+      "1800000000002": {
+        "key": "1800000000002",
+        "name": "SQL Server 2022 (sql auth)",
+        "dbType": "SqlServer",
+        "global": true,
+        "connectionKey": "mysql.connections",
+        "connectTimeout": 15000,
+        "requestTimeout": 30000,
+        "usingSSH": false,
+        "disable": false,
+        "host": "127.0.0.1",
+        "port": 11433,
+        "user": "sa",
+        "password": "Test_1234!",
+        "authType": "default",
+        "encrypt": false,
+        "trustServerCertificate": true,
+        "database": "master",
+        "serverType": "SqlServer"
+      },
+      "1800000000003": {
+        "key": "1800000000003",
+        "name": "ClickHouse (native/http)",
+        "dbType": "ClickHouse",
+        "global": true,
+        "connectionKey": "mysql.connections",
+        "connectTimeout": 15000,
+        "requestTimeout": 30000,
+        "usingSSH": false,
+        "disable": false,
+        "host": "127.0.0.1",
+        "port": 18123,
+        "user": "default",
+        "password": "Test_1234",
+        "database": "default",
+        "serverType": "ClickHouse"
+      }
+    }
+  },
+  "nosql": {
+    "global": {}
+  }
+}

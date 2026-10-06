@@ -11,16 +11,45 @@ var commandExistsSync = require('command-exists').sync;
  * Nothing here is ever downloaded: the user installs the tool themselves,
  * either on PATH or into the folder set by 'database-client-jenishbh.binaryPath'.
  */
-export const EXTERNAL_TOOLS: { command: string, purpose: string }[] = [
-    { command: 'sqlite3', purpose: 'SQLite connections (a fallback binary ships with the extension)' },
-    { command: 'mysql', purpose: 'Open a MySQL terminal' },
-    { command: 'mysqldump', purpose: 'MySQL backup and export' },
-    { command: 'psql', purpose: 'Open a PostgreSQL terminal' },
-    { command: 'pg_dump', purpose: 'PostgreSQL backup and export' },
-    { command: 'mongo', purpose: 'Open a MongoDB terminal' },
-    { command: 'mongoimport', purpose: 'MongoDB import' },
-    { command: 'redis-cli', purpose: 'Open a Redis terminal' },
-    { command: 'ssh', purpose: 'SSH SOCKS proxy tunnel' },
+export interface ExternalTool {
+    command: string;
+    purpose: string;
+    /** true when a feature cannot work at all without it. */
+    required?: boolean;
+    /** what happens when it is absent, shown instead of a bare "missing". */
+    fallback?: string;
+}
+
+/**
+ * Only `java` is genuinely required, and only for JDBC. Everything else either
+ * has a fallback or gates a single optional action, so the check reports them
+ * as optional rather than implying the extension is broken.
+ */
+export const EXTERNAL_TOOLS: ExternalTool[] = [
+    {
+        command: 'java', required: true,
+        purpose: 'JDBC connections (Oracle, Db2, ClickHouse, Trino and ~20 more). The driver jars ship with the extension; the JVM does not.',
+    },
+    {
+        command: 'sqlite3',
+        purpose: 'SQLite connections.',
+        fallback: 'A sqlite3 binary ships with the extension, so this is only used if you prefer your own.',
+    },
+    {
+        command: 'mysqldump',
+        purpose: 'MySQL backup and export.',
+        fallback: 'A pure JavaScript dump runs instead, so backups still work.',
+    },
+    { command: 'mysql', purpose: 'The Open Terminal action for MySQL.', fallback: 'Only that action is unavailable; connections are unaffected.' },
+    { command: 'psql', purpose: 'The Open Terminal action for PostgreSQL.', fallback: 'Only that action is unavailable; connections are unaffected.' },
+    { command: 'mongo', purpose: 'The Open Terminal action for MongoDB.', fallback: 'Only that action is unavailable; connections are unaffected.' },
+    {
+        command: 'redis-cli',
+        purpose: 'The Open Terminal action for Redis.',
+        fallback: 'A built in terminal is used instead.',
+    },
+    { command: 'mongoimport', purpose: 'MongoDB import.', fallback: 'Only the import action is unavailable.' },
+    { command: 'ssh', purpose: 'SSH SOCKS proxy tunnel.', fallback: 'Only the SOCKS proxy action is unavailable; SSH connections and tunnels are unaffected.' },
 ];
 
 export class ExternalTools {
@@ -98,10 +127,11 @@ export class ExternalTools {
         const dir = this.getBinaryPath();
         const items: vscode.QuickPickItem[] = EXTERNAL_TOOLS.map(tool => {
             const resolved = this.resolve(tool.command);
+            const tag = resolved ? '$(check)' : (tool.required ? '$(error)' : '$(circle-outline)');
             return {
-                label: `${resolved ? '$(check)' : '$(x)'} ${tool.command}`,
-                description: resolved ? resolved : 'not found',
-                detail: tool.purpose,
+                label: `${tag} ${tool.command}${tool.required ? '  (required)' : '  (optional)'}`,
+                description: resolved ? resolved : (tool.required ? 'not found - JDBC will not work' : 'not installed'),
+                detail: resolved ? tool.purpose : [tool.purpose, tool.fallback].filter(Boolean).join('  '),
             };
         });
 
@@ -109,7 +139,9 @@ export class ExternalTools {
         Console.log(`External tool check. Binary folder: ${dir || '(not set)'}`);
         for (const tool of EXTERNAL_TOOLS) {
             const resolved = this.resolve(tool.command);
-            Console.log(`  ${resolved ? 'OK     ' : 'MISSING'} ${tool.command} ${resolved ? `-> ${resolved}` : ''}`);
+            const state = resolved ? 'OK      ' : (tool.required ? 'REQUIRED' : 'optional');
+            Console.log(`  ${state} ${tool.command}${resolved ? ` -> ${resolved}` : ''}`);
+            if (!resolved && tool.fallback) Console.log(`           ${tool.fallback}`);
         }
 
         const jars = this.findJars();
@@ -118,11 +150,12 @@ export class ExternalTools {
             items.push({ label: `$(check) ${jar}`, description: "JDBC driver jar", detail: "Usable by a JDBC connection" });
         }
 
-        const missing = EXTERNAL_TOOLS.filter(t => !this.exists(t.command)).length;
+        // only a missing REQUIRED tool is a problem worth warning about
+        const missingRequired = EXTERNAL_TOOLS.filter(t => t.required && !this.exists(t.command));
         const picked = await vscode.window.showQuickPick(items, {
-            placeHolder: missing == 0
-                ? 'All external tools found'
-                : `${missing} tool(s) missing. Install them yourself, then place them in the binary folder.`,
+            placeHolder: missingRequired.length
+                ? `Missing required: ${missingRequired.map(t => t.command).join(', ')}. Everything else is optional.`
+                : 'All required tools found. Optional ones only gate individual actions.',
             matchOnDetail: true,
         });
         if (picked) {
