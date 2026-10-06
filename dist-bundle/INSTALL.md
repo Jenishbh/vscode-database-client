@@ -19,8 +19,11 @@ Then look for **DB (jenishbh)** and **NoSQL (jenishbh)** in the activity bar.
 
 ## Load the sample connections (optional)
 
-`sample-connections.json` holds three example entries (Oracle, SQL Server, ClickHouse)
-pointing at local servers. They are examples of the file format, not working credentials.
+`sample-connections.json` holds 20 example entries covering every connector: MySQL,
+MariaDB, Percona, PostgreSQL, TimescaleDB, SQL Server, Oracle, ClickHouse, SQLite,
+CockroachDB, Trino, MongoDB, Redis, ElasticSearch, SSH/SFTP, FTP and S3/MinIO.
+
+They point at localhost and are examples of the file format, not working credentials.
 
 `Ctrl+Shift+P` → **Database Client: Import Connections** → pick that file.
 
