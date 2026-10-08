@@ -9,13 +9,13 @@
     <template v-else-if="isDateTime(type)">
       <el-date-picker value-format="yyyy-MM-dd HH:mm:ss" type="datetime" :value="value" @input="sync"></el-date-picker>
     </template>
-    <el-input v-else :value="value" @input="sync"></el-input>
+    <el-input v-else :value="value" :placeholder="placeholder" :disabled="disabled" @input="sync"></el-input>
   </div>
 </template>
 
 <script>
 export default {
-  props: ["type", "value"],
+  props: ["type", "value", "placeholder", "disabled"],
   methods: {
     isDateTime(type){
       if(!type)return false;

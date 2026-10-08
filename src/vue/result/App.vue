@@ -4,7 +4,7 @@
       <div style="width:95%;">
         <el-input type="textarea" :autosize="{ minRows:2, maxRows:5}" v-model="toolbar.sql" class="sql-pannel" @keypress.native="panelInput" />
       </div>
-      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" :viewMode.sync="viewMode" :costTime="result.costTime" :pendingEdits="pendingEdits" @changePage="changePage" @sendToVscode="sendToVscode" @export="exportOption.visible = true" @insert="$refs.editor.openInsert()" @addRow="addInlineRow" @deleteConfirm="deleteConfirm" @applyEdits="save" @revertEdits="revertEdits" @run="info.message = false;execute(toolbar.sql);" />
+      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" :viewMode.sync="viewMode" :costTime="result.costTime" :pendingEdits="pendingEdits" @changePage="changePage" @sendToVscode="sendToVscode" @export="exportOption.visible = true" @insert="$refs.editor.openInsert()" @addRow="addInlineRow" @deleteConfirm="deleteConfirm" @applyEdits="save" @revertEdits="revertEdits" @run="runStatement" />
       <div v-if="info.message ">
         <div v-if="info.error" class="info-panel" style="color:red !important" v-html="info.message"></div>
         <div v-if="!info.error" class="info-panel" style="color: green !important;" v-html="info.message"></div>
@@ -17,7 +17,8 @@
         <Controller slot="header" :result="result" :toolbar="toolbar" />
       </ux-table-column>
       <ux-table-column v-for="(field,index) in visibleFields" :key="index" :resizable="true" :field="field.name" :title="field.name" :sortable="true" :width="computeWidth(field,0)" edit-render>
-        <Header slot="header" slot-scope="scope" :result="result" :scope="scope" :index="index" />
+        <Header slot="header" slot-scope="scope" :result="result" :scope="scope" :index="index"
+          :activeFilters="Object.keys(columnFilters)" @columnFilter="applyColumnFilter" />
         <Row slot-scope="scope" :scope="scope" :result="result" :filterObj="toolbar.filter" :editList.sync="update.editList" @execute="execute" @sendToVscode="sendToVscode" @openEditor="openEditor" @duplicateRows="duplicateRows" @localFilter="localFilter" />
       </ux-table-column>
     </ux-grid>
@@ -102,6 +103,8 @@ export default {
         editList: {},
         lock: false,
       },
+      /** column -> { values: [], includeNull: bool }, for the header dropdowns */
+      columnFilters: {},
     };
   },
   mounted() {
@@ -183,7 +186,12 @@ export default {
           this.exportOption.visible = false;
           break;
         case "RUN":
-          this.toolbar.sql = response.sql;
+          // The grid issues its own DELETEs through the same path, and the
+          // echo used to land in the editable box, so the next press of Run
+          // would delete again. Keep the query there instead.
+          if (!this.isDataChange(response.sql)) {
+            this.toolbar.sql = response.sql;
+          }
           this.table.loading = response.transId != this.result.transId;
           break;
         case "DATA":
@@ -193,7 +201,6 @@ export default {
           this.result.data = response.data;
           this.result.costTime=response.costTime;
           this.toolbar.sql = response.sql;
-          this.result.data.unshift({ isFilter: true, content: "" });
           break;
         case "COUNT":
           this.page.total = parseInt(response.data);
@@ -205,8 +212,9 @@ export default {
           this.info.error = false;
           this.info.needRefresh = false;
           if (
-            response.message.indexOf("AffectedRows") != -1 ||
-            response.isInsert
+            response.isInsert ||
+            (response.message || "").indexOf("AffectedRows") != -1 ||
+            this.isDataChange(response.sql)
           ) {
             this.refresh();
           }
@@ -298,6 +306,80 @@ export default {
       // Marked so save() builds an INSERT for it rather than an UPDATE against
       // a row that does not exist yet.
       this.result.data.push({ isNew: true });
+    },
+    /**
+     * The Run button only ever executes what is in the box; it never applies
+     * pending edits. Re-running does reload the grid though, so warn before
+     * throwing away typing rather than losing it silently.
+     */
+    /**
+     * Multi-value filter from a column header. Several columns combine, and a
+     * column with nothing picked drops out.
+     */
+    applyColumnFilter({ column, values, includeNull }) {
+      const next = { ...this.columnFilters };
+      if ((!values || values.length == 0) && !includeNull) {
+        delete next[column];
+      } else {
+        next[column] = { values: values || [], includeNull: !!includeNull };
+      }
+      this.columnFilters = next;
+      this.execute(this.buildFilteredSql());
+    },
+    /** Rebuild the base statement with every active column filter applied. */
+    buildFilteredSql() {
+      const base = this.stripWhere(this.result.sql || this.toolbar.sql || "");
+      const parts = [];
+      for (const column of Object.keys(this.columnFilters)) {
+        const { values, includeNull } = this.columnFilters[column];
+        const name = wrapByDb(column, this.result.dbType);
+        const quoted = values.map((v) => this.wrapQuote(this.getTypeByColumn(column), v));
+        const terms = [];
+        if (quoted.length == 1) { terms.push(`${name} = ${quoted[0]}`); }
+        else if (quoted.length > 1) { terms.push(`${name} IN (${quoted.join(",")})`); }
+        if (includeNull) { terms.push(`${name} IS NULL`); }
+        if (terms.length) { parts.push(terms.length > 1 ? `(${terms.join(" OR ")})` : terms[0]); }
+      }
+      if (!parts.length) { return base.statement + base.tail; }
+      return `${base.statement} WHERE ${parts.join(" AND ")}${base.tail}`;
+    },
+    /**
+     * Split a statement into the part a WHERE goes after and the trailing
+     * clauses it must stay in front of.
+     */
+    stripWhere(sql) {
+      let text = sql.replace(/;\s*$/, "").trim();
+      const tailMatch = text.match(/\s(order\s+by|group\s+by|having|limit|fetch\s+first|offset)\s/i);
+      let tail = "";
+      if (tailMatch) {
+        tail = " " + text.slice(tailMatch.index).trim();
+        text = text.slice(0, tailMatch.index);
+      }
+      text = text.replace(/\swhere\s[\s\S]*$/i, "");
+      return { statement: text.trim(), tail: tail + ";" };
+    },
+    /** Does this statement change rows, as opposed to reading them? */
+    isDataChange(sql) {
+      return /^\s*\(?\s*(insert|update|delete|truncate|merge|replace)\s/i.test(sql || "");
+    },
+    runStatement() {
+      const run = () => {
+        this.info.message = false;
+        this.execute(this.toolbar.sql);
+      };
+      if (this.pendingEdits > 0) {
+        this.$confirm(
+          `${this.pendingEdits} row(s) have unapplied edits. Running the statement reloads the grid and discards them. Apply them first with the tick, or continue to discard.`,
+          "Unapplied edits",
+          { confirmButtonText: "Discard and run", cancelButtonText: "Cancel", type: "warning" }
+        ).then(() => {
+          this.update.editList = {};
+          this.update.lock = false;
+          run();
+        }).catch(() => { });
+        return;
+      }
+      run();
     },
     revertEdits() {
       // Nothing has been written, so re-running the statement is the reliable
@@ -485,10 +567,8 @@ export default {
       // table
       this.table.widthItem = {};
       this.initShowColumn();
-      // add filter row
-      if (this.result.columnList) {
-        this.result.data.unshift({ isFilter: true, content: "" });
-      }
+      // The per column filter row is gone: filtering is a dropdown on the
+      // column header now, which can take several values at once.
       // toolbar
       if (!this.result.sql.match(/\bwhere\b/gi)) {
         this.toolbar.filter = {};

@@ -9,7 +9,8 @@
             <span>{{ column.defaultValue ? ` Default : ${column.defaultValue}` : "" }}</span>
             <span>{{ column.extra == "auto_increment" ? ` AUTO_INCREMENT` : "" }}</span>
           </span>
-          <CellEditor v-if="editModel" v-model="editModel[column.name]" :type="column.type"></CellEditor>
+          <CellEditor v-if="editModel" v-model="editModel[column.name]" :type="column.type"
+            :placeholder="hintFor(column)" :disabled="isAutoFilled(column)"></CellEditor>
         </template>
       </el-form-item>
     </el-form>
@@ -64,6 +65,34 @@ export default {
       this.model = "copy";
       this.loading = false;
       this.visible = true;
+    },
+    /**
+     * A column the database fills in by itself when inserting. Typing over an
+     * identity value is rejected, and overwriting a default silently loses it,
+     * so neither is offered on an insert.
+     */
+    isAutoFilled(column) {
+      if (this.model != "insert" && this.model != "copy") { return false; }
+      if (column.name == this.primaryKey && this.isGeneratedKey(column)) { return true; }
+      return false;
+    },
+    isGeneratedKey(column) {
+      return column.isAutoIncrement || column.extra == "auto_increment" ||
+        /int|serial|identity|bigint/i.test(column.type || "");
+    },
+    /** Says what happens if the field is left alone. */
+    hintFor(column) {
+      if (this.model == "insert" || this.model == "copy") {
+        if (column.name == this.primaryKey && this.isGeneratedKey(column)) {
+          return "assigned by the database";
+        }
+        if (column.defaultValue != null && column.defaultValue !== "") {
+          return `leave blank for ${column.defaultValue}`;
+        }
+        if (column.nullable == "NO") { return "required"; }
+        return "leave blank for NULL";
+      }
+      return "";
     },
     openInsert() {
       if(this.result.tableCount!=1){

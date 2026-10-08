@@ -12,13 +12,18 @@
       <span class="column-type" v-if="result.columnList[index]">
         {{result.columnList[index].type}}
       </span>
+      <ColumnFilter :column="scope.column.title" :rows="result.data"
+        :active="activeFilters.includes(scope.column.title)"
+        @filter="$emit('columnFilter', $event)" />
     </div>
   </el-tooltip>
 </template>
 
 <script>
+import ColumnFilter from "./ColumnFilter.vue";
 export default {
-  props: ["scope", "result","index"],
+  components: { ColumnFilter },
+  props: ["scope", "result", "index", "activeFilters"],
   methods: {
     getTip(column, scopeColumn) {
       if (!column || !column.comment) return scopeColumn.title;

@@ -4,6 +4,11 @@
       <el-input class='edit-filter' v-model="filterObj[scope.column.title]" :clearable='true' placeholder="Filter" title="Type a value and press Enter to filter on this column. Clear it to remove the condition." @clear="filter(null,scope.column.title)" @keyup.enter.native="filter($event,scope.column.title)">
       </el-input>
     </template>
+    <template v-else-if="scope.row.isNew">
+      <div class="edit-column is-new" :contenteditable="editable"
+        :data-placeholder="newRowHint(scope.column.title)"
+        @input="editListen($event,scope)" @contextmenu.prevent="onContextmenu($event,scope)"></div>
+    </template>
     <template v-else-if="!scope.row.isFilter && result.dbType=='ElasticSearch'">
       <div class="edit-column" :contenteditable="editable" style="height: 100%; line-height: 33px;" @input="editListen($event,scope)" @contextmenu.prevent="onContextmenu($event,scope)" v-html='dataformat(scope.row[scope.column.title])'></div>
     </template>
@@ -46,6 +51,20 @@ export default {
       editList[rowIndex][column.title] = event.target.textContent;
       this.$emit("sendToVscode", "dataModify");
       this.$emit("update:editList", editList);
+    },
+    /**
+     * An added row starts empty rather than showing (NULL), and says which
+     * columns fill themselves in so they are not typed over.
+     */
+    newRowHint(name) {
+      const column = (this.result.columnList || []).find((c) => c.name == name);
+      if (!column) { return ""; }
+      const generated = column.isAutoIncrement || column.extra == "auto_increment";
+      if (name == this.result.primaryKey && generated) { return "auto"; }
+      if (name == this.result.primaryKey) { return "auto / type a key"; }
+      if (column.defaultValue != null && column.defaultValue !== "") { return "default"; }
+      if (column.nullable == "NO") { return "required"; }
+      return "";
     },
     filter(event, column, operation) {
       if (!operation) operation = "=";
@@ -246,4 +265,11 @@ export default {
 </script>
 
 <style>
+/* an added row shows its hint only while the cell is still empty */
+.edit-column.is-new:empty:before {
+  content: attr(data-placeholder);
+  opacity: 0.45;
+  font-style: italic;
+}
+
 </style>

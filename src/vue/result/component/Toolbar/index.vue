@@ -8,7 +8,7 @@
     <el-button icon="el-icon-plus" @click="$emit('addRow')" title="Add an empty row to the grid and type into it, then press Apply"></el-button>
     <el-button icon="el-icon-delete" style="color:#f56c6c" @click="$emit('deleteConfirm');" title="delete"></el-button>
     <el-button icon="el-icon-bottom" @click="$emit('export');" style="color:#4ba3ff;" title="Export"></el-button>
-    <el-button icon="el-icon-caret-right" title="Execute Sql" style="color: #54ea54;margin-left:0;" @click="$emit('run');"></el-button>
+    <el-button icon="el-icon-caret-right" title="Run the statement above and reload. This never applies your edits." style="color: #54ea54;margin-left:0;" @click="$emit('run');"></el-button>
     <el-button icon="el-icon-check" :disabled="!pendingEdits" @click="$emit('applyEdits')"
       :style="pendingEdits ? 'color:#67c23a;font-weight:bold' : ''"
       :title="pendingEdits ? `Apply ${pendingEdits} edited row(s) to the database` : 'No edits to apply'">{{ pendingEdits ? ' ' + pendingEdits : '' }}</el-button>
