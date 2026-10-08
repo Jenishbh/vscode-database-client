@@ -8,7 +8,7 @@
       governed by connect-src, so it keeps working.
       'unsafe-inline' and 'unsafe-eval' are required by Vue 2 and Element UI.
     -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src {{cspSource}} data: blob:; script-src {{cspSource}} 'unsafe-inline' 'unsafe-eval'; style-src {{cspSource}} 'unsafe-inline'; font-src {{cspSource}} data:; connect-src {{cspSource}};">
     <script src="js/oldCompatible.js"></script>
 </head>
 <body class="p-0 m-0">

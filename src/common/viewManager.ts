@@ -44,6 +44,18 @@ interface ViewState {
     eventEmitter: EventEmitter;
 }
 
+/**
+ * The webview HTML carries a Content-Security-Policy with a {{cspSource}}
+ * placeholder. It cannot be written literally: asWebviewUri serves our
+ * scripts, styles and fonts from https://*.vscode-resource.vscode-cdn.net,
+ * which is a different origin from the webview document, so a policy naming
+ * only 'self' blocks every one of them and the panel renders blank.
+ * webview.cspSource is exactly that origin, and external hosts stay blocked.
+ */
+export function applyCspSource(html: string, cspSource: string): string {
+    return html.split("{{cspSource}}").join(cspSource);
+}
+
 export class ViewManager {
 
     private static viewStatu: { [key: string]: ViewState } = {};
@@ -140,7 +152,13 @@ export class ViewManager {
     }
 
     private static buildPath(data: string, webview: vscode.Webview, contextPath: string): string {
-        return data.replace(/((src|href)=("|'))(.+?\.(css|js))\b/gi, "$1" + webview.asWebviewUri(vscode.Uri.file(`${contextPath}`)) + "/$4");
+        // asWebviewUri serves our scripts, styles and fonts from
+        // https://*.vscode-resource.vscode-cdn.net, a different origin from the
+        // webview document itself, so a policy of "script-src 'self'" blocks
+        // them and every panel renders blank. webview.cspSource is exactly that
+        // origin. External hosts stay blocked, which is the point of the policy.
+        return applyCspSource(data, webview.cspSource)
+            .replace(/((src|href)=("|'))(.+?\.(css|js))\b/gi, "$1" + webview.asWebviewUri(vscode.Uri.file(`${contextPath}`)) + "/$4");
     }
 
 

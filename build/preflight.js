@@ -183,6 +183,64 @@ for (const value of idStrings) {
     }
 }
 
+// ------------------------------------------------- 5. webview content policy
+// A webview's scripts are served from webview.cspSource
+// ("'self' https://*.vscode-cdn.net"), not from the document's own origin, so
+// a policy naming only 'self' blocks every bundle and the panel renders blank
+// with no error the user can see. This is exactly how that shipped once.
+// Transpile the real viewManager and use its own function, so this checks the
+// shipped substitution rather than a copy of it.
+let applyCspSource;
+try {
+    const compiled = path.join(require("os").tmpdir(), "dbc-preflight-viewmanager.js");
+    require("esbuild").buildSync({
+        entryPoints: [path.join(ROOT, "src", "common", "viewManager.ts")],
+        outfile: compiled, bundle: true, platform: "node", format: "cjs",
+        external: ["vscode"], logLevel: "silent",
+    });
+    applyCspSource = require(compiled).applyCspSource;
+    if (typeof applyCspSource !== "function") {
+        fail("viewManager no longer exports applyCspSource, so the content policy is not being substituted");
+        applyCspSource = null;
+    }
+} catch (err) {
+    fail("could not load applyCspSource from viewManager: " + err.message);
+    applyCspSource = null;
+}
+
+const CSP_SOURCE = "'self' https://*.vscode-cdn.net"; // what VS Code returns
+for (const page of ["index.html", "app.html", "result.html"]) {
+    const file = path.join(ROOT, "out", "webview", page);
+    if (!fs.existsSync(file)) {
+        fail("out/webview/" + page + " is missing -- run the webview build");
+        continue;
+    }
+    const html = fs.readFileSync(file, "utf8");
+    const meta = html.match(/Content-Security-Policy"\s+content="([^"]*)"/);
+    if (!meta) { continue; } // no policy at all is not this check's business
+    const policy = meta[1];
+
+    if (!policy.includes("{{cspSource}}")) {
+        fail(page + " has a Content-Security-Policy with no {{cspSource}} placeholder, so the webview's own scripts are blocked and the panel renders blank");
+        continue;
+    }
+    if (!applyCspSource) { continue; }
+    const resolved = applyCspSource(policy, CSP_SOURCE);
+    if (resolved.includes("{{")) {
+        fail(page + " still has an unresolved placeholder after substitution: " + resolved);
+    }
+    for (const directive of ["script-src", "style-src", "font-src", "img-src"]) {
+        const value = (resolved.match(new RegExp(directive + "([^;]*)")) || [])[1] || "";
+        if (!value.includes("https://*.vscode-cdn.net")) {
+            fail(page + " " + directive + " does not allow the origin webview resources are served from:" + value);
+        }
+    }
+    // the whole point of having a policy here
+    if (/https?:\/\/(?!\*\.vscode-cdn\.net)[a-z]/i.test(resolved)) {
+        fail(page + " content policy allows an external host: " + resolved);
+    }
+}
+
 // ------------------------------------------------------ 5. uninstall hook
 const hook = (manifest.scripts || {})["vscode:uninstall"];
 if (!hook) {

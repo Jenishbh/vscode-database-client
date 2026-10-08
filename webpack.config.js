@@ -53,7 +53,7 @@ module.exports = [
             new StripTrackersPlugin(),
             new VueLoaderPlugin(),
             new HtmlWebpackPlugin({ inject: true, template: './public/index.html', chunks: ['app'], filename: 'webview/app.html' }),
-            new HtmlWebpackPlugin({ inject: true, templateContent: `<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self';"><script src="js/oldCompatible.js"></script></head><body> <div id="app"></div> </body>`, chunks: ['query'], filename: 'webview/result.html' }),
+            new HtmlWebpackPlugin({ inject: true, templateContent: `<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src {{cspSource}} data: blob:; script-src {{cspSource}} 'unsafe-inline' 'unsafe-eval'; style-src {{cspSource}} 'unsafe-inline'; font-src {{cspSource}} data:; connect-src {{cspSource}};"><script src="js/oldCompatible.js"></script></head><body> <div id="app"></div> </body>`, chunks: ['query'], filename: 'webview/result.html' }),
             new CopyWebpackPlugin({
                 patterns: [{ from: 'public', to: './webview' }]
             }),
