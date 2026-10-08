@@ -176,6 +176,16 @@ export class QueryPage {
         queryParam.res.columnList = queryParam.res.fields as any[]
     }
 
+    /** Drop a statement terminator or list punctuation left on a table token. */
+    public static stripTerminator(token: string): string {
+        return token.replace(/[;,)]+$/, "");
+    }
+
+    /** Drop whichever quoting style the dialect wrapped an identifier in. */
+    public static unquote(token: string): string {
+        return token.replace(/^[`"\[]+/, "").replace(/[`"\]]+$/, "");
+    }
+
     private static async loadColumnList(queryParam: QueryParam<DataResponse>) {
         // fix null point on result view
         queryParam.res.columnList = []
@@ -184,7 +194,15 @@ export class QueryPage {
             return;
         }
 
-        let tableName = sqlList[0]
+        // The match above runs to the next whitespace, so when the table is the
+        // last token in the statement it carries the terminator with it:
+        // "SELECT TOP 100 * FROM dbo.order_items;" yields "order_items;",
+        // which matches no node, leaving columnList empty and primaryKey unset.
+        // The grid then quietly drops inline editing, row selection, delete and
+        // the insert dialog's fields. Engines whose paging adds a trailing
+        // clause, like LIMIT, happen to avoid it, which is why this only showed
+        // up on SQL Server and Oracle.
+        let tableName = QueryPage.stripTerminator(sqlList[0])
         let database: string;
 
         if (queryParam.connection.dbType == DatabaseType.MSSQL && tableName.indexOf(".") != -1) {
@@ -198,7 +216,7 @@ export class QueryPage {
             database = fields[0].schema || fields[0].db;
             queryParam.res.database = database;
         } else {
-            tableName = tableName.replace(/^"?(.+?)"?$/, '$1')
+            tableName = QueryPage.unquote(tableName)
         }
 
         const tableNode = queryParam.connection.getByRegion(tableName)

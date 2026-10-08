@@ -1,0 +1,1 @@
+{"mysql.connections":{"sqlserver-grid":{"key":"sqlserver-grid","name":"SQL Server 2022","dbType":"SqlServer","global":true,"host":"127.0.0.1","port":11433,"user":"sa","password":"Test_1234!","database":"shopdb","authType":"default","encrypt":false,"trustServerCertificate":true,"connectTimeout":15000,"requestTimeout":20000,"connectionKey":"mysql.connections"}}}
