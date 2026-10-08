@@ -6,7 +6,7 @@
           SSH Host
           <span class="mr-1 text-red-600" title="required">*</span>
         </label>
-        <input class="w-64 field__input" placeholder="SSH Host" required v-model="connectionOption.ssh.host" />
+        <input class="w-64 field__input" placeholder="SSH Host" :required="tunnelInUse" v-model="connectionOption.ssh.host" />
       </div>
       <div class="inline-block mb-2 mr-10">
         <label class="inline-block font-bold mr-9 w-28">
@@ -16,7 +16,7 @@
         <input
           class="w-64 field__input"
           placeholder="SSH Port"
-          required
+          :required="tunnelInUse"
           type="number"
           v-model="connectionOption.ssh.port"
         />
@@ -29,7 +29,7 @@
           SSH Username
           <span class="mr-1 text-red-600" title="required">*</span>
         </label>
-        <input class="w-64 field__input" placeholder="SSH Username" required v-model="connectionOption.ssh.username" />
+        <input class="w-64 field__input" placeholder="SSH Username" :required="tunnelInUse" v-model="connectionOption.ssh.username" />
       </div>
 
       <div class="inline-block mb-2 mr-10">
@@ -69,7 +69,7 @@
         <input
           class="w-64 field__input"
           placeholder="Password"
-          required
+          :required="tunnelInUse"
           type="password"
           v-model="connectionOption.ssh.password"
         />
@@ -113,6 +113,18 @@
 <script>
 export default {
   props: ["connectionOption"],
+  computed: {
+    /**
+     * These inputs live in a tab that is hidden with v-show, so they stay in
+     * the DOM. Marking them required unconditionally made the whole form
+     * invalid for every connection that does not use a tunnel, and the browser
+     * blocks submit while trying to focus a field nobody can see -- which
+     * looks exactly like the Connect button doing nothing.
+     */
+    tunnelInUse() {
+      return !!this.connectionOption.usingSSH || this.connectionOption.dbType == "SSH";
+    },
+  },
 };
 </script>
 

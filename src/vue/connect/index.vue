@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="tryConnect" class="flex flex-col mx-auto connect-container">
+  <form @submit.prevent="tryConnect" @invalid.capture="onInvalid" class="flex flex-col mx-auto connect-container">
     <h1 class="py-4 text-2xl">Connect to Database Server</h1>
 
     <blockquote class="p-3 mb-2 panel error" v-if="connect.error">
@@ -98,7 +98,7 @@
       </span>
     </section>
 
-    <div v-show="configTab === 'main'">
+    <div v-show="configTab === 'main'" data-tab="main">
     <JDBC v-if="connectionOption.dbType == 'JDBC'" :connectionOption="connectionOption" />
     <ElasticSearch v-if="connectionOption.dbType == 'ElasticSearch'" :connectionOption="connectionOption" />
     <SQLite
@@ -172,18 +172,21 @@
 
       <section v-if="connectionOption.dbType != 'FTP' && connectionOption.dbType != 'MongoDB'">
         <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-32 mr-5 font-bold">Databases</label>
+          <label class="inline-block w-32 mr-5 font-bold"
+            title="The database to open on connect. Leave empty to connect to the server itself.">Database</label>
           <input
             class="w-64 field__input"
-            placeholder="Special connection database"
+            placeholder="Optional, e.g. shopdb"
             v-model="connectionOption.database"
           />
         </div>
         <div class="inline-block mb-2 mr-10" v-if="connectionOption.dbType != 'Redis'">
-          <label class="inline-block w-32 mr-5 font-bold">Include Databases</label>
+          <label class="inline-block w-32 mr-5 font-bold"
+            title="Comma separated. When set, the tree lists only these databases and hides every other one. Leave empty to show them all.">Show Only</label>
           <input
             class="w-64 field__input"
-            placeholder="Example: mysql,information_schema"
+            placeholder="All databases (e.g. shopdb,analytics)"
+            title="Comma separated. When set, the tree lists only these databases and hides every other one. Leave empty to show them all."
             v-model="connectionOption.includeDatabases"
           />
         </div>
@@ -257,7 +260,7 @@
     />
     </div>
 
-    <div v-show="configTab === 'ssh'">
+    <div v-show="configTab === 'ssh'" data-tab="ssh">
       <section class="flex items-center mt-4 mb-2">
         <label class="inline-block w-32 mr-5 font-bold">Enable</label>
         <el-switch v-model="connectionOption.usingSSH"></el-switch>
@@ -407,7 +410,8 @@ export default {
   methods: {
     save() {
       // persist without opening a connection
-      this.emit("save", { connectionOption: this.connectionOption });
+      this.connect.loading = true;
+      vscodeEvent.emit("save", { connectionOption: this.connectionOption });
     },
     pick(entry) {
       applyServerType(entry, this.connectionOption);
@@ -423,6 +427,17 @@ export default {
     installSqlite() {
       vscodeEvent.emit("installSqlite");
       this.sqliteState = true;
+    },
+    onInvalid(event) {
+      // The browser refuses to submit and tries to focus the offending field.
+      // If it sits in a tab that is not showing, nothing appears to happen, so
+      // bring that tab forward first.
+      const panel = event.target.closest("[data-tab]");
+      const tab = panel && panel.getAttribute("data-tab");
+      if (tab && this.configTab !== tab) {
+        this.configTab = tab;
+      }
+      this.connect.loading = false;
     },
     tryConnect() {
       this.connect.loading = true;

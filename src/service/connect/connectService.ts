@@ -17,6 +17,14 @@ import { readFileSync } from "fs";
 import { GlobalState, WorkState } from "@/common/state";
 var commandExistsSync = require('command-exists').sync;
 
+/** A short readable name for a connection, for notification text. */
+function describe(node: Node): string {
+    if (node.name) { return node.name; }
+    if (node.dbType == DatabaseType.SQLITE) { return `SQLite ${node.dbPath || ""}`.trim(); }
+    const host = node.host ? (node.port ? `${node.host}:${node.port}` : node.host) : "";
+    return [node.dbType, host].filter(Boolean).join(" ") || "the connection";
+}
+
 export class ConnectService {
 
     public async openConnect(provider: DbTreeDataProvider, connectionNode?: ConnectionNode) {
@@ -73,25 +81,32 @@ export class ConnectService {
                     try {
                         node.initKey();
                         await provider.addConnection(node)
-                        handler.emit("success", { message: "Save success!", key: node.key, connectionKey: node.connectionKey })
+                        const label = describe(node)
+                        handler.emit("success", { message: `Saved ${label}.`, key: node.key, connectionKey: node.connectionKey })
+                        // the panel in the webview is easy to miss, and nothing
+                        // else told the user whether this worked
+                        window.showInformationMessage(`Database Client: saved ${label}.`)
                     } catch (err) {
-                        handler.emit("error", err?.message || err)
+                        const message = err?.message || `${err}`
+                        handler.emit("error", message)
+                        window.showErrorMessage(`Database Client: could not save the connection. ${message}`)
                     }
                 }).on("connecting", async (data) => {
                     const connectionOption = data.connectionOption
                     const node:Node = Util.trim(NodeUtil.of(connectionOption))
+                    const label = describe(node)
                     try {
                         node.initKey();
                         await this.connect(node)
                         await provider.addConnection(node)
                         const { key, connectionKey } = node
-                        handler.emit("success", { message: 'connect success!', key, connectionKey })
+                        handler.emit("success", { message: `Connected to ${label}.`, key, connectionKey })
+                        window.showInformationMessage(`Database Client: connected to ${label}.`)
                     } catch (err) {
-                        if (err?.message) {
-                            handler.emit("error", err.message)
-                        } else {
-                            handler.emit("error", err)
-                        }
+                        const message = err?.message || `${err}`
+                        handler.emit("error", message)
+                        // the reason matters more than the fact, so show it in full
+                        window.showErrorMessage(`Database Client: could not connect to ${label}. ${message}`)
                     }
                 }).on("close", () => {
                     handler.panel.dispose()
