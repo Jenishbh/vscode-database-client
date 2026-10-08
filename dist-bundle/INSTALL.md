@@ -8,29 +8,17 @@ That's it. It finds VS Code, installs the extension, and tells you what to do ne
 
 Restart VS Code afterwards and look for **DB (jenishbh)** in the activity bar.
 
-### Do not double-click the `.vsix` file
+### Use `INSTALL.bat`, not the `.vsix`
 
-It will fail, and the error makes it look like the file is broken. It isn't.
-Two different things go wrong depending on the machine:
+Windows does not install a `.vsix` by double-clicking it — the file gets handed to
+whichever installer owns that extension on your PC, and that is not VS Code's
+extension manager. `INSTALL.bat` calls the VS Code CLI directly, which does.
 
-**If Visual Studio is installed**, Windows hands every `.vsix` to *Visual Studio's*
-installer, which only handles Visual Studio extensions. You get:
-
-> One or more extensions are for Visual Studio Code. Try installing them in Visual Studio Code.
-
-**If Visual Studio is not installed**, VS Code takes it and refuses it as unsigned.
-Only extensions published through the VS Code Marketplace carry a signature; every
-locally built `.vsix` is unsigned, including this one.
-
-`INSTALL.bat` sidesteps both by calling the VS Code CLI directly.
-
-### Prefer to do it yourself
+Or run it yourself:
 
 ```
 code --install-extension vscode-database-client-1.5.0.vsix
 ```
-
-Or inside VS Code: **Extensions** panel → the `...` menu → **Install from VSIX…**
 
 ## Load the sample connections (optional)
 

@@ -22,9 +22,7 @@ if not defined VSIX (
 echo   Extension : %VSIX%
 
 rem --- find the VS Code CLI ----------------------------------------------
-rem Double-clicking a .vsix is handled by Visual Studio's installer on PCs
-rem that have Visual Studio, and VS Code refuses unsigned local files from
-rem its UI. Calling the CLI directly avoids both problems.
+rem The CLI is the only path that reliably installs a locally built .vsix.
 set "CODE="
 
 for %%P in (
