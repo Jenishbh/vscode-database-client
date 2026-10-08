@@ -14,6 +14,9 @@
       :title="pendingEdits ? `Apply ${pendingEdits} edited row(s) to the database` : 'No edits to apply'">{{ pendingEdits ? ' ' + pendingEdits : '' }}</el-button>
     <el-button icon="el-icon-refresh-left" :disabled="!pendingEdits" @click="$emit('revertEdits')"
       :title="pendingEdits ? 'Discard the edits and reload from the database' : 'No edits to discard'"></el-button>
+    <el-button icon="el-icon-close" v-if="activeFilters" @click="$emit('clearFilters')"
+      style="color:#e6a23c"
+      :title="`Clear all ${activeFilters} column filter(s)`">{{ ' ' + activeFilters }}</el-button>
     <SegmentedControl :value="viewMode" @input="$emit('update:viewMode',$event)" :options="viewModeOptions" style="margin-left:8px;vertical-align:middle;" title="Grid View Mode" />
     <div style="display:inline-block;font-size:14px;padding-left: 8px;" class="el-pagination__total">
       Cost: {{costTime}}ms
@@ -29,7 +32,7 @@
 import SegmentedControl from "../SegmentedControl.vue";
 export default {
   components: { SegmentedControl },
-  props: ["costTime", "search", "showFullBtn", "page", "viewMode", "pendingEdits"],
+  props: ["costTime", "search", "showFullBtn", "page", "viewMode", "pendingEdits", "activeFilters"],
   data() {
     return {
       searchInput: null,

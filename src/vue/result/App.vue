@@ -4,14 +4,14 @@
       <div style="width:95%;">
         <el-input type="textarea" :autosize="{ minRows:2, maxRows:5}" v-model="toolbar.sql" class="sql-pannel" @keypress.native="panelInput" />
       </div>
-      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" :viewMode.sync="viewMode" :costTime="result.costTime" :pendingEdits="pendingEdits" @changePage="changePage" @sendToVscode="sendToVscode" @export="exportOption.visible = true" @insert="$refs.editor.openInsert()" @addRow="addInlineRow" @deleteConfirm="deleteConfirm" @applyEdits="save" @revertEdits="revertEdits" @run="runStatement" />
+      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" :viewMode.sync="viewMode" :costTime="result.costTime" :pendingEdits="pendingEdits" :activeFilters="Object.keys(columnFilters).length" @changePage="changePage" @sendToVscode="sendToVscode" @export="exportOption.visible = true" @insert="$refs.editor.openInsert()" @addRow="addInlineRow" @deleteConfirm="deleteConfirm" @applyEdits="save" @revertEdits="revertEdits" @clearFilters="clearColumnFilters" @run="runStatement" />
       <div v-if="info.message ">
         <div v-if="info.error" class="info-panel" style="color:red !important" v-html="info.message"></div>
         <div v-if="!info.error" class="info-panel" style="color: green !important;" v-html="info.message"></div>
       </div>
     </div>
     <!-- trigger when click -->
-    <ux-grid v-if="viewMode==='default'" ref="dataTable" :data="filterData" v-loading='table.loading' size='small' :cell-style="{height: '35px'}" @sort-change="sort" :height="remainHeight" width="100vh" stripe :checkboxConfig="{ checkMethod: selectable}">
+    <ux-grid v-if="viewMode==='default'" :key="gridKey" ref="dataTable" :data="filterData" v-loading='table.loading' size='small' :cell-style="{height: '35px'}" @sort-change="sort" :height="remainHeight" width="100vh" stripe :checkboxConfig="{ checkMethod: selectable}">
       <ux-table-column type="checkbox" width="40" fixed="left"></ux-table-column>
       <ux-table-column type="index" width="40" :seq-method="({row,rowIndex})=>(rowIndex||!row.isFilter)?rowIndex:undefined">
         <Controller slot="header" :result="result" :toolbar="toolbar" />
@@ -105,6 +105,12 @@ export default {
       },
       /** column -> { values: [], includeNull: bool }, for the header dropdowns */
       columnFilters: {},
+      /**
+       * Bumped on every load to force the grid to rebuild. The cells are
+       * contenteditable, so a discarded edit lives on in the DOM until the
+       * nodes are thrown away.
+       */
+      gridKey: 0,
     };
   },
   mounted() {
@@ -117,6 +123,7 @@ export default {
     const handlerData = (data, sameTable) => {
       this.result = data;
       this.toolbar.sql = data.sql;
+      this.gridKey++;
 
       if (sameTable) {
         this.clear();
@@ -201,6 +208,7 @@ export default {
           this.result.data = response.data;
           this.result.costTime=response.costTime;
           this.toolbar.sql = response.sql;
+          this.gridKey++;
           break;
         case "COUNT":
           this.page.total = parseInt(response.data);
@@ -324,6 +332,11 @@ export default {
         next[column] = { values: values || [], includeNull: !!includeNull };
       }
       this.columnFilters = next;
+      this.execute(this.buildFilteredSql());
+    },
+    clearColumnFilters() {
+      if (Object.keys(this.columnFilters).length == 0) { return; }
+      this.columnFilters = {};
       this.execute(this.buildFilteredSql());
     },
     /** Rebuild the base statement with every active column filter applied. */
