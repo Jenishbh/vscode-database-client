@@ -14,9 +14,9 @@
       :title="pendingEdits ? `Apply ${pendingEdits} edited row(s) to the database` : 'No edits to apply'">{{ pendingEdits ? ' ' + pendingEdits : '' }}</el-button>
     <el-button icon="el-icon-refresh-left" :disabled="!pendingEdits" @click="$emit('revertEdits')"
       :title="pendingEdits ? 'Discard the edits and reload from the database' : 'No edits to discard'"></el-button>
-    <el-button icon="el-icon-close" v-if="activeFilters" @click="$emit('clearFilters')"
-      style="color:#e6a23c"
-      :title="`Clear all ${activeFilters} column filter(s)`">{{ ' ' + activeFilters }}</el-button>
+    <el-button v-if="activeFilters" @click="$emit('clearFilters')" size="mini"
+      style="color:#e6a23c;margin-left:8px"
+      :title="`Remove the filter on ${activeFilters} column(s)`">Clear filters</el-button>
     <SegmentedControl :value="viewMode" @input="$emit('update:viewMode',$event)" :options="viewModeOptions" style="margin-left:8px;vertical-align:middle;" title="Grid View Mode" />
     <div style="display:inline-block;font-size:14px;padding-left: 8px;" class="el-pagination__total">
       Cost: {{costTime}}ms
