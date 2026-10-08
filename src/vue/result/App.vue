@@ -4,7 +4,7 @@
       <div style="width:95%;">
         <el-input type="textarea" :autosize="{ minRows:2, maxRows:5}" v-model="toolbar.sql" class="sql-pannel" @keypress.native="panelInput" />
       </div>
-      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" :viewMode.sync="viewMode" :costTime="result.costTime" @changePage="changePage" @sendToVscode="sendToVscode" @export="exportOption.visible = true" @insert="$refs.editor.openInsert()" @deleteConfirm="deleteConfirm" @run="info.message = false;execute(toolbar.sql);" />
+      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" :viewMode.sync="viewMode" :costTime="result.costTime" :pendingEdits="pendingEdits" @changePage="changePage" @sendToVscode="sendToVscode" @export="exportOption.visible = true" @insert="$refs.editor.openInsert()" @addRow="addInlineRow" @deleteConfirm="deleteConfirm" @applyEdits="save" @revertEdits="revertEdits" @run="info.message = false;execute(toolbar.sql);" />
       <div v-if="info.message ">
         <div v-if="info.error" class="info-panel" style="color:red !important" v-html="info.message"></div>
         <div v-if="!info.error" class="info-panel" style="color: green !important;" v-html="info.message"></div>
@@ -151,16 +151,22 @@ export default {
       this.update.lock = false;
       this.$message({
         showClose: true,
-        duration: 500,
-        message: "Update Success",
+        duration: 2500,
+        message: "Changes applied to the database",
         type: "success",
       });
     });
     window.onkeypress = (e) => {
-      if (
-        (e.code == "Enter" && e.target.classList.contains("edit-column")) ||
-        (e.ctrlKey && e.code == "KeyS")
-      ) {
+      // Enter inside a cell used to write straight to the database. Edits now
+      // wait for Apply, so Enter only ends the edit and ctrl+s is the shortcut
+      // for the same button.
+      if (e.code == "Enter" && e.target.classList.contains("edit-column")) {
+        e.target.blur();
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
+      if (e.ctrlKey && e.code == "KeyS") {
         this.save();
         e.stopPropagation();
         e.preventDefault();
@@ -240,17 +246,20 @@ export default {
       return this.editable && !row.isFilter;
     },
     save() {
-      if (Object.keys(this.update.editList).length == 0 && this.update.lock) {
+      if (this.pendingEdits == 0) {
         return;
       }
       this.update.lock = true;
       let sql = "";
       for (const index in this.update.editList) {
         const element = this.update.editList[index];
-        sql += this.$refs.editor.buildUpdateSql(
-          element,
-          this.result.data[index]
-        );
+        const origin = this.result.data[index];
+        if (origin && origin.isNew) {
+          const insert = this.$refs.editor.buildInsertSql({ ...element, isNew: undefined });
+          if (insert) { sql += insert + "\n"; }
+          continue;
+        }
+        sql += this.$refs.editor.buildUpdateSql(element, origin);
       }
       if (sql) {
         vscodeEvent.emit("saveModify", sql);
@@ -280,6 +289,23 @@ export default {
       } else {
         this.$message("Not any input, duplicate fail!");
       }
+    },
+    addInlineRow() {
+      if (!this.editable) {
+        this.$message.error("This result has no single table with a primary key, so rows cannot be added here.");
+        return;
+      }
+      // Marked so save() builds an INSERT for it rather than an UPDATE against
+      // a row that does not exist yet.
+      this.result.data.push({ isNew: true });
+    },
+    revertEdits() {
+      // Nothing has been written, so re-running the statement is the reliable
+      // way to put every cell back, including ones edited then edited again.
+      this.update.editList = {};
+      this.update.lock = false;
+      this.execute(this.result.sql);
+      this.$message({ message: "Edits discarded", type: "info" });
     },
     localFilter(column, value) {
       if (
@@ -473,6 +499,15 @@ export default {
     },
   },
   computed: {
+    /** Rows edited but not yet written. Drives the Apply and Revert buttons. */
+    pendingEdits() {
+      const edited = new Set(Object.keys(this.update.editList || {}));
+      let untouchedNewRows = 0;
+      (this.result.data || []).forEach((row, index) => {
+        if (row && row.isNew && !edited.has(String(index))) { untouchedNewRows++; }
+      });
+      return edited.size + untouchedNewRows;
+    },
     filterData() {
       const localFilter = this.table.localFilter;
       return this.result.data.filter(

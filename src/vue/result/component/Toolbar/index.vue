@@ -4,10 +4,16 @@
     </el-button>
     <el-input v-model="searchInput" size="mini" placeholder="Input To Search Data" style="width:200px" :clearable="true" />
     <el-button icon="icon-github" title="Star the project to represent support." @click='()=>$emit("sendToVscode", "openGithub")'></el-button>
-    <el-button icon="el-icon-circle-plus-outline" @click="$emit('insert')" title="Insert new row"></el-button>
+    <el-button icon="el-icon-circle-plus-outline" @click="$emit('insert')" title="Insert a row using a form"></el-button>
+    <el-button icon="el-icon-plus" @click="$emit('addRow')" title="Add an empty row to the grid and type into it, then press Apply"></el-button>
     <el-button icon="el-icon-delete" style="color:#f56c6c" @click="$emit('deleteConfirm');" title="delete"></el-button>
     <el-button icon="el-icon-bottom" @click="$emit('export');" style="color:#4ba3ff;" title="Export"></el-button>
     <el-button icon="el-icon-caret-right" title="Execute Sql" style="color: #54ea54;margin-left:0;" @click="$emit('run');"></el-button>
+    <el-button icon="el-icon-check" :disabled="!pendingEdits" @click="$emit('applyEdits')"
+      :style="pendingEdits ? 'color:#67c23a;font-weight:bold' : ''"
+      :title="pendingEdits ? `Apply ${pendingEdits} edited row(s) to the database` : 'No edits to apply'">{{ pendingEdits ? ' ' + pendingEdits : '' }}</el-button>
+    <el-button icon="el-icon-refresh-left" :disabled="!pendingEdits" @click="$emit('revertEdits')"
+      :title="pendingEdits ? 'Discard the edits and reload from the database' : 'No edits to discard'"></el-button>
     <SegmentedControl :value="viewMode" @input="$emit('update:viewMode',$event)" :options="viewModeOptions" style="margin-left:8px;vertical-align:middle;" title="Grid View Mode" />
     <div style="display:inline-block;font-size:14px;padding-left: 8px;" class="el-pagination__total">
       Cost: {{costTime}}ms
@@ -23,7 +29,7 @@
 import SegmentedControl from "../SegmentedControl.vue";
 export default {
   components: { SegmentedControl },
-  props: ["costTime", "search", "showFullBtn", "page", "viewMode"],
+  props: ["costTime", "search", "showFullBtn", "page", "viewMode", "pendingEdits"],
   data() {
     return {
       searchInput: null,
