@@ -26,9 +26,10 @@ export interface ExternalTool {
  * as optional rather than implying the extension is broken.
  */
 export const EXTERNAL_TOOLS: ExternalTool[] = [
-    {
-        command: 'java', required: true,
-        purpose: 'JDBC connections (Oracle, Db2, ClickHouse, Trino and ~20 more). The driver jars ship with the extension; the JVM does not.',
+        {
+        command: 'java',
+        purpose: 'JDBC connections (Oracle, Db2, ClickHouse, Trino and ~20 more).',
+        fallback: 'A Java runtime ships with the extension and is used first, so nothing needs installing. A java on PATH is only used if the bundled one is missing.',
     },
     {
         command: 'sqlite3',

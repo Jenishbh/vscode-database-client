@@ -1086,6 +1086,7 @@
 		"dev": "webpack --progress",
 		"build": "npm run build:extension && npm run build:webview && npm run preflight",
 		"preflight": "node build/preflight.js",
+		"build:jre": "node build/fetch-jre.js",
 		"build:extension": "node build.js",
 		"build:webview": "webpack --config-name webview --mode=production",
 		"build:webpack": "webpack --progress --mode=production",

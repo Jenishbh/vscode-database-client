@@ -35,19 +35,23 @@ Every database driver is compiled into the extension. These connect out of the b
 | SSH / SFTP | FTP |
 
 Roughly twenty more engines work through the bundled JDBC bridge — Db2, Trino,
-Snowflake, BigQuery, Databricks, Hive, Redshift, Cassandra, H2 and others. All ten
-driver jars ship inside the extension.
+Snowflake, BigQuery, Databricks, Hive, Redshift, Cassandra, H2 and others. The
+driver jars and the Java runtime they need both ship inside the extension.
 
-## What needs Java
+## Nothing to install
 
-JDBC connections only.
+Every driver is compiled in, and a Java runtime is packaged with the
+extension, so JDBC connections work without Java on your machine. The
+extension uses the packaged runtime first and only looks for a `java` on your
+PATH if that one is missing.
 
-You need a **JDK 11 or newer — a JRE is not enough.** The bridge runs as
-`java -cp <drivers> JdbcBridge.java`, Java's single-file source mode (JEP 330),
-which uses the JDK's built-in compiler. A JRE has no compiler and will fail.
+The runtime is Eclipse Temurin 21, trimmed with jlink to the modules the JDBC
+drivers use. It is GPLv2 with the Classpath Exception; its licence files are
+under `jre/legal` inside the installed extension.
 
-JDK 21 is recommended. Put `java` on your `PATH`, then run
-`Ctrl+Shift+P` → **Database Client: Check External Tools** to confirm it was found.
+This bundle is built for 64-bit Windows. On macOS or Linux the extension still
+runs, but JDBC connections there need a `java` on PATH until a build for those
+platforms exists.
 
 ## Optional command line tools
 

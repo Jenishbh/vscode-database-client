@@ -7,6 +7,9 @@ const { copyFileSync, mkdirSync } = require("fs")
 mkdirSync("out", { recursive: true })
 copyFileSync("build/uninstall.js", "out/uninstall.js")
 
+// Compile the JDBC bridge so it runs on a JRE rather than needing a full JDK.
+require("./build/compile-bridge")
+
 build({
     entryPoints: ['./src/extension.ts'],
     format: 'cjs',

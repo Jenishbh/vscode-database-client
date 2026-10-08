@@ -10,3 +10,4 @@ yarn.lock_gs/
 _gs/
 *.stackdump
 DatabaseClient-*.zip
+jre/

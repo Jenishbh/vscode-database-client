@@ -81,18 +81,35 @@ export class JdbcConnection extends IConnection {
         return narrowed.length ? narrowed : jars;
     }
 
+    /**
+     * The runtime packaged with the extension, so JDBC works without the user
+     * installing Java. Absent on a build where build/fetch-jre.js was not run,
+     * and then whatever is on PATH is used instead.
+     */
+    public static bundledJava(): string {
+        const exe = process.platform == "win32" ? "java.exe" : "java";
+        const java = Global.getExtPath("jre", "bin", exe);
+        return existsSync(java) ? java : null;
+    }
+
     connect(callback: (err: Error) => void): void {
-        let java: string;
-        try {
-            java = ExternalTools.require("java");
-        } catch (err) {
-            callback(err);
-            return;
+        let java = JdbcConnection.bundledJava();
+        if (!java) {
+            try {
+                java = ExternalTools.require("java");
+            } catch (err) {
+                callback(err);
+                return;
+            }
         }
 
-        const bridge = Global.getExtPath("jdbc", "JdbcBridge.java");
-        if (!existsSync(bridge)) {
-            callback(new Error(`JDBC bridge not found at ${bridge}`));
+        // Prefer the classes compiled at build time: running those needs only a
+        // JRE, while source mode compiles on every launch and needs a full JDK.
+        const classes = Global.getExtPath("out", "jdbc-classes");
+        const source = Global.getExtPath("jdbc", "JdbcBridge.java");
+        const compiled = existsSync(classes);
+        if (!compiled && !existsSync(source)) {
+            callback(new Error(`JDBC bridge not found at ${classes} or ${source}`));
             return;
         }
 
@@ -103,7 +120,9 @@ export class JdbcConnection extends IConnection {
             return;
         }
 
-        const args = ["-cp", jars.join(delimiter), bridge];
+        const args = compiled
+            ? ["-cp", [...jars, classes].join(delimiter), "JdbcBridge"]
+            : ["-cp", jars.join(delimiter), source];
         this.child = spawn(java, args, { stdio: ["pipe", "pipe", "pipe"] });
         this.child.stdout.setEncoding("utf8");
         this.child.stdout.on("data", chunk => this.onData(chunk));

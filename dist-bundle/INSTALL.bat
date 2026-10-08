@@ -73,8 +73,8 @@ echo     1. Restart VS Code.
 echo     2. Look for "Database" in the activity bar on the left.
 echo     3. Add a connection with the + button. Nothing is set up in advance.
 echo.
-echo   JDBC connections (Oracle, Db2, ClickHouse, Trino and more) need a
-echo   JDK 11 or newer on your PATH. Everything else works as is.
+echo   Nothing else to install: every driver and the Java runtime that JDBC
+echo   connections need are packaged with the extension.
 
 :done
 echo.
