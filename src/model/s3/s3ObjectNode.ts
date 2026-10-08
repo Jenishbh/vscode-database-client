@@ -24,7 +24,7 @@ export class S3ObjectNode extends S3BaseNode {
         this.description = prettyBytes(object.Size || 0);
         this.iconPath = this.getIcon(this.name);
         this.command = {
-            command: "jenishbh.ssh.file.open",
+            command: "dbclient.ssh.file.open",
             arguments: [this],
             title: "Open File"
         };

@@ -27,13 +27,19 @@ const memento = {
   setKeysForSync: () => { },
 };
 
+const storageDir = path.join(process.env.EXT_PATH, "_gs");
+// Start from nothing, so this also proves a fresh install has no connections.
+fs.rmSync(storageDir, { recursive: true, force: true });
+
 const context: any = {
   subscriptions: [],
   extensionPath: process.env.EXT_PATH,
-  globalStoragePath: path.join(process.env.EXT_PATH, "_gs"),
+  globalStoragePath: storageDir,
+  globalStorageUri: { fsPath: storageDir },
+  storageUri: { fsPath: path.join(storageDir, "ws") },
   globalState: memento,
   workspaceState: { get: (k: string, d?: any) => d, update: () => Promise.resolve() },
-  extension: { id: "jenishbh.vscode-database-client", packageJSON: { version: "0" } },
+  extension: { id: "dbclient.vscode-database-client", packageJSON: { version: "0" } },
 };
 
 require("@/common/global").Global.context = context;
@@ -101,6 +107,17 @@ async function walk(key: string, treeName: string) {
 
 (async () => {
   await activate(context);
+
+  // Connections live in a file store that activate() opens, not in
+  // context.globalState, so seed through the accessor the extension itself
+  // uses rather than through a stubbed memento.
+  const { GlobalState } = require("@/common/state");
+  if (Object.keys(GlobalState.get(CacheKey.DATBASE_CONECTIONS, {})).length !== 0) {
+    throw new Error("a fresh store should hold no connections");
+  }
+  await GlobalState.update(CacheKey.DATBASE_CONECTIONS, config.database.global);
+  await GlobalState.update(CacheKey.NOSQL_CONNECTION, config.nosql.global);
+
   await walk(CacheKey.DATBASE_CONECTIONS, "Database tree");
   await walk(CacheKey.NOSQL_CONNECTION, "NoSQL tree");
 

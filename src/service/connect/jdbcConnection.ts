@@ -99,7 +99,7 @@ export class JdbcConnection extends IConnection {
         const jars = JdbcConnection.findDriverJars(this.node.jdbcUrl);
         if (jars.length == 0) {
             callback(new Error(
-                `No JDBC driver jars found. Drivers ship with the extension; for others put the jar in the folder set by 'database-client-jenishbh.binaryPath', then run 'Database Client: Check External Tools'.`));
+                `No JDBC driver jars found. Drivers ship with the extension; for others put the jar in the folder set by 'database-client.binaryPath', then run 'Database Client: Check External Tools'.`));
             return;
         }
 

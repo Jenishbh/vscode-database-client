@@ -1,4 +1,11 @@
 const { build } = require("esbuild")
+const { copyFileSync, mkdirSync } = require("fs")
+
+// VS Code resolves "vscode:uninstall" against the extension folder and runs it
+// with plain node, so it must be a real file in out/ rather than part of the
+// bundle.
+mkdirSync("out", { recursive: true })
+copyFileSync("build/uninstall.js", "out/uninstall.js")
 
 build({
     entryPoints: ['./src/extension.ts'],

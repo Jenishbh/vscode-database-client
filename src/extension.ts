@@ -42,8 +42,14 @@ import { FTPFileNode } from "./model/ftp/ftpFileNode";
 import { HistoryNode } from "./provider/history/historyNode";
 import { ConnectService } from "./service/connect/connectService";
 import { ErDiagramService } from "./service/erDiagramService";
+import { clearState, initState } from "./common/state";
+import { existsSync, unlinkSync } from "fs";
 
 export function activate(context: vscode.ExtensionContext) {
+
+    // Before ServiceManager: its constructor runs DatabaseCache.initCache(),
+    // which reads saved state.
+    initState(context)
 
     const serviceManager = new ServiceManager(context)
 
@@ -68,65 +74,85 @@ export function activate(context: vscode.ExtensionContext) {
                 [CodeCommand.RecordHistory]: (sql: string, costTime: number) => {
                     serviceManager.historyService.recordHistory(sql, costTime);
                 },
-                "jenishbh.history.open": () => serviceManager.historyService.showHistory(),
-                "jenishbh.setting.open": () => {
+                "dbclient.history.open": () => serviceManager.historyService.showHistory(),
+                "dbclient.setting.open": () => {
                     serviceManager.settingService.open();
                 },
-                "jenishbh.server.info": (connectionNode: ConnectionNode) => {
+                "dbclient.server.info": (connectionNode: ConnectionNode) => {
                     serviceManager.statusService.show(connectionNode)
                 },
-                "jenishbh.name.copy": (copyAble: CopyAble) => {
+                "dbclient.name.copy": (copyAble: CopyAble) => {
                     copyAble.copyName();
                 },
             },
             // connection
             ...{
-                "jenishbh.connection.add": () => {
+                "dbclient.connection.add": () => {
                     serviceManager.connectService.openConnect(serviceManager.provider)
                 },
-                "jenishbh.connection.edit": (connectionNode: ConnectionNode) => {
+                "dbclient.connection.edit": (connectionNode: ConnectionNode) => {
                     serviceManager.connectService.openConnect(connectionNode.provider, connectionNode)
                 },
-                "jenishbh.connection.config": () => {
+                "dbclient.connection.config": () => {
                     serviceManager.connectService.openConfig()
                 },
-                "jenishbh.connection.open": (connectionNode: ConnectionNode) => {
+                "dbclient.connection.open": (connectionNode: ConnectionNode) => {
                     connectionNode.provider.openConnection(connectionNode)
                 },
-                "jenishbh.connection.disable": (connectionNode: ConnectionNode) => {
+                "dbclient.connection.disable": (connectionNode: ConnectionNode) => {
                     connectionNode.provider.disableConnection(connectionNode)
                 },
-                "jenishbh.connection.delete": (connectionNode: ConnectionNode) => {
+                "dbclient.connection.delete": (connectionNode: ConnectionNode) => {
                     connectionNode.deleteConnection(context);
                 },
-                "jenishbh.host.copy": (connectionNode: ConnectionNode) => {
+                "dbclient.host.copy": (connectionNode: ConnectionNode) => {
                     connectionNode.copyName();
+                },
+                "dbclient.connection.deleteAll": async () => {
+                    // Uninstalling from the Extensions view clears saved
+                    // connections for you, but uninstalling with
+                    // "code --uninstall-extension" does not: that path never
+                    // runs the uninstall hook. This is the deliberate way to
+                    // wipe everything without uninstalling.
+                    const confirmed = await vscode.window.showWarningMessage(
+                        "Delete every saved connection, query history and cached tree state? This cannot be undone.",
+                        { modal: true }, "Delete All")
+                    if (confirmed !== "Delete All") { return; }
+                    clearState();
+                    try {
+                        const config = FileManager.getPath("config.json");
+                        if (existsSync(config)) { unlinkSync(config); }
+                    } catch (err) {
+                        Console.log(`Could not remove the connection config file: ${err.message}`)
+                    }
+                    DbTreeDataProvider.refresh();
+                    vscode.window.showInformationMessage("All saved connections were deleted.")
                 },
             },
             // externel data
             ...{
-                "jenishbh.connection.import": () => {
+                "dbclient.connection.import": () => {
                     ConnectService.importConfig();
                 },
-                "jenishbh.dependency.check": () => {
+                "dbclient.dependency.check": () => {
                     ExternalTools.check();
                 },
-                "jenishbh.util.github": () => {
+                "dbclient.util.github": () => {
                     vscode.env.openExternal(vscode.Uri.parse('https://github.com/jenishbh/vscode-database-client'));
                 },
-                "jenishbh.struct.diff": () => {
+                "dbclient.struct.diff": () => {
                     new DiffService().startDiff(serviceManager.provider);
                 },
-                "jenishbh.data.export": (node: SchemaNode | TableNode) => {
+                "dbclient.data.export": (node: SchemaNode | TableNode) => {
                     ServiceManager.getDumpService(node.dbType).dump(node, true)
                 },
-                "jenishbh.struct.export": (node: SchemaNode | TableNode) => {
+                "dbclient.struct.export": (node: SchemaNode | TableNode) => {
                     ServiceManager.getDumpService(node.dbType).dump(node, false)
                 },
-                "jenishbh.document.generate": (node: SchemaNode | TableNode) => {
+                "dbclient.document.generate": (node: SchemaNode | TableNode) => {
                     ServiceManager.getDumpService(node.dbType).generateDocument(node)
                 },
-                "jenishbh.data.import": (node: SchemaNode | ConnectionNode) => {
+                "dbclient.data.import": (node: SchemaNode | ConnectionNode) => {
                     const importService=ServiceManager.getImportService(node.dbType);
                     vscode.window.showOpenDialog({ filters: importService.filter(), canSelectMany: false, openLabel: "Select sql file to import", canSelectFiles: true, canSelectFolders: false }).then((filePath) => {
                         if (filePath) {
@@ -137,81 +163,81 @@ export function activate(context: vscode.ExtensionContext) {
             },
             // ssh
             ...{
-                'jenishbh.ssh.folder.new': (parentNode: SSHConnectionNode) => parentNode.newFolder(),
-                'jenishbh.ssh.file.new': (parentNode: SSHConnectionNode) => parentNode.newFile(),
-                'jenishbh.ssh.host.copy': (parentNode: SSHConnectionNode) => parentNode.copyIP(),
-                'jenishbh.ssh.forward.port': (parentNode: SSHConnectionNode) => parentNode.fowardPort(),
-                'jenishbh.ssh.file.upload': (parentNode: SSHConnectionNode) => parentNode.upload(),
-                'jenishbh.ssh.folder.open': (parentNode: SSHConnectionNode) => parentNode.openInTeriminal(),
-                'jenishbh.ssh.path.copy': (node: Node) => node.copyName(),
-                'jenishbh.ssh.socks.port': (parentNode: SSHConnectionNode) => parentNode.startSocksProxy(),
-                'jenishbh.ssh.file.delete': (fileNode: FileNode | SSHConnectionNode) => fileNode.delete(),
-                'jenishbh.ssh.file.open': (fileNode: FileNode | FTPFileNode) => fileNode.open(),
-                'jenishbh.ssh.file.download': (fileNode: FileNode) => fileNode.download(),
+                'dbclient.ssh.folder.new': (parentNode: SSHConnectionNode) => parentNode.newFolder(),
+                'dbclient.ssh.file.new': (parentNode: SSHConnectionNode) => parentNode.newFile(),
+                'dbclient.ssh.host.copy': (parentNode: SSHConnectionNode) => parentNode.copyIP(),
+                'dbclient.ssh.forward.port': (parentNode: SSHConnectionNode) => parentNode.fowardPort(),
+                'dbclient.ssh.file.upload': (parentNode: SSHConnectionNode) => parentNode.upload(),
+                'dbclient.ssh.folder.open': (parentNode: SSHConnectionNode) => parentNode.openInTeriminal(),
+                'dbclient.ssh.path.copy': (node: Node) => node.copyName(),
+                'dbclient.ssh.socks.port': (parentNode: SSHConnectionNode) => parentNode.startSocksProxy(),
+                'dbclient.ssh.file.delete': (fileNode: FileNode | SSHConnectionNode) => fileNode.delete(),
+                'dbclient.ssh.file.open': (fileNode: FileNode | FTPFileNode) => fileNode.open(),
+                'dbclient.ssh.file.download': (fileNode: FileNode) => fileNode.download(),
             },
             // database
             ...{
-                "jenishbh.db.active": () => {
+                "dbclient.db.active": () => {
                     serviceManager.provider.activeDb();
                 },
-                "jenishbh.db.truncate": (databaseNode: SchemaNode) => {
+                "dbclient.db.truncate": (databaseNode: SchemaNode) => {
                     databaseNode.truncateDb();
                 },
-                "jenishbh.database.add": (connectionNode: ConnectionNode) => {
+                "dbclient.database.add": (connectionNode: ConnectionNode) => {
                     connectionNode.createDatabase();
                 },
-                "jenishbh.db.drop": (databaseNode: SchemaNode) => {
+                "dbclient.db.drop": (databaseNode: SchemaNode) => {
                     databaseNode.dropDatatabase();
                 },
-                "jenishbh.schema.erDiagram": (databaseNode: SchemaNode) => {
+                "dbclient.schema.erDiagram": (databaseNode: SchemaNode) => {
                     new ErDiagramService().show(databaseNode);
                 }
             },
             // mock
             ...{
-                "jenishbh.mock.table": (tableNode: TableNode) => {
+                "dbclient.mock.table": (tableNode: TableNode) => {
                     serviceManager.mockRunner.create(tableNode)
                 },
-                "jenishbh.mock.run": () => {
+                "dbclient.mock.run": () => {
                     serviceManager.mockRunner.runMock()
                 },
             },
             // user node
             ...{
-                "jenishbh.change.user": (userNode: UserNode) => {
+                "dbclient.change.user": (userNode: UserNode) => {
                     userNode.changePasswordTemplate();
                 },
-                "jenishbh.user.grant": (userNode: UserNode) => {
+                "dbclient.user.grant": (userNode: UserNode) => {
                     userNode.grandTemplate();
                 },
-                "jenishbh.user.sql": (userNode: UserNode) => {
+                "dbclient.user.sql": (userNode: UserNode) => {
                     userNode.selectSqlTemplate();
                 },
             },
             // history
             ...{
-                "jenishbh.history.view": (historyNode: HistoryNode) => {
+                "dbclient.history.view": (historyNode: HistoryNode) => {
                     historyNode.view()
                 }
             },
             // query node
             ...{
-                "jenishbh.runQuery": (sql:string) => {
+                "dbclient.runQuery": (sql:string) => {
                     if (typeof sql != 'string') { sql = null; }
                     QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection());
                 },
-                "jenishbh.runQuery.newTab": (sql: string) => {
+                "dbclient.runQuery.newTab": (sql: string) => {
                     // a unique viewId forces a fresh result panel instead of reusing "Query"
                     QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection(), { viewId: `Query-${Date.now()}` });
                 },
-                "jenishbh.runAllQuery.noParse": () => {
+                "dbclient.runAllQuery.noParse": () => {
                     // split:false sends the buffer as one statement, skipping delimiter parsing
                     QueryUnit.runQuery(null, ConnectionManager.tryGetConnection(), { runAll: true, split: false });
                 },
-                "jenishbh.runAllQuery": () => {
+                "dbclient.runAllQuery": () => {
                     QueryUnit.runQuery(null, ConnectionManager.tryGetConnection(), { runAll: true });
                 },
-                "jenishbh.query.switch": async (databaseOrConnectionNode: SchemaNode | ConnectionNode | EsConnectionNode | ESIndexNode) => {
+                "dbclient.query.switch": async (databaseOrConnectionNode: SchemaNode | ConnectionNode | EsConnectionNode | ESIndexNode) => {
                     if (databaseOrConnectionNode) {
                         await databaseOrConnectionNode.newQuery();
                     } else {
@@ -220,128 +246,128 @@ export function activate(context: vscode.ExtensionContext) {
                         });
                     }
                 },
-                "jenishbh.query.run": (queryNode: QueryNode) => {
+                "dbclient.query.run": (queryNode: QueryNode) => {
                     queryNode.run()
                 },
-                "jenishbh.query.open": (queryNode: QueryNode) => {
+                "dbclient.query.open": (queryNode: QueryNode) => {
                     queryNode.open()
                 },
-                "jenishbh.query.add": (queryGroup: QueryGroup) => {
+                "dbclient.query.add": (queryGroup: QueryGroup) => {
                     queryGroup.add();
                 },
-                "jenishbh.query.rename": (queryNode: QueryNode) => {
+                "dbclient.query.rename": (queryNode: QueryNode) => {
                     queryNode.rename()
                 }
             },
             // redis
             ...{
-                "jenishbh.redis.connection.status": (connectionNode: RedisConnectionNode) => connectionNode.showStatus(),
-                "jenishbh.connection.terminal": (node: Node) => node.openTerminal(),
-                "jenishbh.redis.key.detail": (keyNode: KeyNode) => keyNode.detail(),
-                "jenishbh.redis.key.del": (keyNode: KeyNode) => keyNode.delete(),
+                "dbclient.redis.connection.status": (connectionNode: RedisConnectionNode) => connectionNode.showStatus(),
+                "dbclient.connection.terminal": (node: Node) => node.openTerminal(),
+                "dbclient.redis.key.detail": (keyNode: KeyNode) => keyNode.detail(),
+                "dbclient.redis.key.del": (keyNode: KeyNode) => keyNode.delete(),
             },
             // table node
             ...{
-                "jenishbh.show.esIndex": (indexNode: ESIndexNode) => {
+                "dbclient.show.esIndex": (indexNode: ESIndexNode) => {
                     indexNode.viewData()
                 },
-                "jenishbh.table.truncate": (tableNode: TableNode) => {
+                "dbclient.table.truncate": (tableNode: TableNode) => {
                     tableNode.truncateTable();
                 },
-                "jenishbh.table.drop": (tableNode: TableNode) => {
+                "dbclient.table.drop": (tableNode: TableNode) => {
                     tableNode.dropTable();
                 },
-                "jenishbh.table.source": (tableNode: TableNode) => {
+                "dbclient.table.source": (tableNode: TableNode) => {
                     if (tableNode) { tableNode.showSource(); }
                 },
-                "jenishbh.view.source": (tableNode: TableNode) => {
+                "dbclient.view.source": (tableNode: TableNode) => {
                     if (tableNode) { tableNode.showSource(); }
                 },
-                "jenishbh.table.show": (tableNode: TableNode) => {
+                "dbclient.table.show": (tableNode: TableNode) => {
                     if (tableNode) { tableNode.openInNew(); }
                 },
             },
             // column node
             ...{
-                "jenishbh.column.up": (columnNode: ColumnNode) => {
+                "dbclient.column.up": (columnNode: ColumnNode) => {
                     columnNode.moveUp();
                 },
-                "jenishbh.column.down": (columnNode: ColumnNode) => {
+                "dbclient.column.down": (columnNode: ColumnNode) => {
                     columnNode.moveDown();
                 },
-                "jenishbh.column.add": (tableNode: TableNode) => {
+                "dbclient.column.add": (tableNode: TableNode) => {
                     tableNode.addColumnTemplate();
                 },
-                "jenishbh.column.update": (columnNode: ColumnNode) => {
+                "dbclient.column.update": (columnNode: ColumnNode) => {
                     columnNode.updateColumnTemplate();
                 },
-                "jenishbh.column.drop": (columnNode: ColumnNode) => {
+                "dbclient.column.drop": (columnNode: ColumnNode) => {
                     columnNode.dropColumnTemplate();
                 },
             },
             // template
             ...{
-                "jenishbh.table.find": (tableNode: TableNode) => {
+                "dbclient.table.find": (tableNode: TableNode) => {
                     tableNode.openTable();
                 },
-                "jenishbh.codeLens.run": (sql: string) => {
+                "dbclient.codeLens.run": (sql: string) => {
                     QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection(), { split: true, recordHistory: true })
                 },
-                "jenishbh.table.design": (tableNode: TableNode) => {
+                "dbclient.table.design": (tableNode: TableNode) => {
                     tableNode.designTable();
                 },
             },
             // show source
             ...{
-                "jenishbh.show.procedure": (procedureNode: ProcedureNode) => {
+                "dbclient.show.procedure": (procedureNode: ProcedureNode) => {
                     procedureNode.showSource();
                 },
-                "jenishbh.show.function": (functionNode: FunctionNode) => {
+                "dbclient.show.function": (functionNode: FunctionNode) => {
                     functionNode.showSource();
                 },
-                "jenishbh.show.trigger": (triggerNode: TriggerNode) => {
+                "dbclient.show.trigger": (triggerNode: TriggerNode) => {
                     triggerNode.showSource();
                 },
             },
             // create template
             ...{
-                "jenishbh.template.sql": (tableNode: TableNode) => {
+                "dbclient.template.sql": (tableNode: TableNode) => {
                     tableNode.selectSqlTemplate();
                 },
-                "jenishbh.template.table": (tableGroup: TableGroup) => {
+                "dbclient.template.table": (tableGroup: TableGroup) => {
                     tableGroup.createTemplate();
                 },
-                "jenishbh.template.procedure": (procedureGroup: ProcedureGroup) => {
+                "dbclient.template.procedure": (procedureGroup: ProcedureGroup) => {
                     procedureGroup.createTemplate();
                 },
-                "jenishbh.template.view": (viewGroup: ViewGroup) => {
+                "dbclient.template.view": (viewGroup: ViewGroup) => {
                     viewGroup.createTemplate();
                 },
-                "jenishbh.template.trigger": (triggerGroup: TriggerGroup) => {
+                "dbclient.template.trigger": (triggerGroup: TriggerGroup) => {
                     triggerGroup.createTemplate();
                 },
-                "jenishbh.template.function": (functionGroup: FunctionGroup) => {
+                "dbclient.template.function": (functionGroup: FunctionGroup) => {
                     functionGroup.createTemplate();
                 },
-                "jenishbh.template.user": (userGroup: UserGroup) => {
+                "dbclient.template.user": (userGroup: UserGroup) => {
                     userGroup.createTemplate();
                 },
             },
             // drop template
             ...{
-                "jenishbh.delete.user": (userNode: UserNode) => {
+                "dbclient.delete.user": (userNode: UserNode) => {
                     userNode.drop();
                 },
-                "jenishbh.delete.view": (viewNode: ViewNode) => {
+                "dbclient.delete.view": (viewNode: ViewNode) => {
                     viewNode.drop();
                 },
-                "jenishbh.delete.procedure": (procedureNode: ProcedureNode) => {
+                "dbclient.delete.procedure": (procedureNode: ProcedureNode) => {
                     procedureNode.drop();
                 },
-                "jenishbh.delete.function": (functionNode: FunctionNode) => {
+                "dbclient.delete.function": (functionNode: FunctionNode) => {
                     functionNode.drop();
                 },
-                "jenishbh.delete.trigger": (triggerNode: TriggerNode) => {
+                "dbclient.delete.trigger": (triggerNode: TriggerNode) => {
                     triggerNode.drop();
                 },
             },

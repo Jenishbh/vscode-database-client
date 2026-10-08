@@ -24,6 +24,7 @@ import { MongoConnection } from "./connect/mongoConnection";
 import { ExasolConnection } from './connect/exasolConnection';
 import { JdbcConnection } from './connect/jdbcConnection';
 import { S3Connection } from './connect/s3Connection';
+import { FileManager } from "@/common/filesManager";
 
 interface ConnectionWrapper {
     connection: IConnection;
@@ -186,7 +187,11 @@ export class ConnectionManager {
     public static getByActiveFile(): Node {
         if (vscode.window.activeTextEditor) {
             const fileName = vscode.window.activeTextEditor.document.fileName;
-            if (fileName.includes('jenishbh')) {
+            // Only the files we write under globalStorage encode a connection in
+            // their folder name. Match on the storage path itself rather than on
+            // the publisher name embedded in it, so renaming the publisher
+            // cannot silently turn this off.
+            if (FileManager.isOurs(fileName)) {
                 const queryName = path.basename(path.resolve(fileName, '..'))
                 const [host, port, database, schema] = queryName
                     .replace(/^.*@@/, '') // new connection id

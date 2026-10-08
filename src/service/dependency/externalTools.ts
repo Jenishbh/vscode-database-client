@@ -9,7 +9,7 @@ var commandExistsSync = require('command-exists').sync;
 /**
  * External command line tools this extension can use.
  * Nothing here is ever downloaded: the user installs the tool themselves,
- * either on PATH or into the folder set by 'database-client-jenishbh.binaryPath'.
+ * either on PATH or into the folder set by 'database-client.binaryPath'.
  */
 export interface ExternalTool {
     command: string;
@@ -96,9 +96,9 @@ export class ExternalTools {
             const dir = this.getBinaryPath();
             const errText = dir
                 ? `Command '${command}' not found on PATH or in ${dir}`
-                : `Command '${command}' not found on PATH. Set 'database-client-jenishbh.binaryPath' to a folder containing it.`;
+                : `Command '${command}' not found on PATH. Set 'database-client.binaryPath' to a folder containing it.`;
             vscode.window.showErrorMessage(errText, 'Check External Tools').then(choice => {
-                if (choice) { vscode.commands.executeCommand('jenishbh.dependency.check'); }
+                if (choice) { vscode.commands.executeCommand('dbclient.dependency.check'); }
             });
             throw new Error(errText);
         }
@@ -159,7 +159,7 @@ export class ExternalTools {
             matchOnDetail: true,
         });
         if (picked) {
-            vscode.commands.executeCommand('workbench.action.openSettings', 'database-client-jenishbh.binaryPath');
+            vscode.commands.executeCommand('workbench.action.openSettings', 'database-client.binaryPath');
         }
     }
 

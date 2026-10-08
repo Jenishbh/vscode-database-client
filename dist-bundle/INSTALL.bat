@@ -1,9 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
-title Database Client (jenishbh) - Installer
+title Database Client - Installer
 
 echo.
-echo   Database Client (jenishbh) - Installer
+echo   Database Client - Installer
 echo   ======================================
 echo.
 
@@ -70,9 +70,8 @@ echo   [OK] Installed.
 echo.
 echo   Next steps
 echo     1. Restart VS Code.
-echo     2. Look for "DB (jenishbh)" in the activity bar on the left.
-echo     3. Optional: Ctrl+Shift+P  ^>  Database Client: Import Connections
-echo        and pick sample-connections.json from this folder.
+echo     2. Look for "Database" in the activity bar on the left.
+echo     3. Add a connection with the + button. Nothing is set up in advance.
 echo.
 echo   JDBC connections (Oracle, Db2, ClickHouse, Trino and more) need a
 echo   JDK 11 or newer on your PATH. Everything else works as is.

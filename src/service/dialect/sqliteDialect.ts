@@ -1,3 +1,4 @@
+import { CreateIndexParam } from "./param/createIndexParam";
 import { UpdateTableParam } from "./param/updateTableParam";
 import { SqlDialect } from "./sqlDialect";
 
@@ -7,6 +8,16 @@ export class SqliTeDialect extends SqlDialect{
     }
     showIndex(database: string, table: string):string{
         return `SELECT name index_name FROM sqlite_master WHERE type='index' and tbl_name='${table}' `;
+    }
+    createIndex(createIndexParam: CreateIndexParam): string {
+        // SQLite has no ALTER TABLE ADD INDEX; indexes are separate objects.
+        // A PRIMARY KEY cannot be added to an existing table at all, so that
+        // falls through to null and the designer says so.
+        const unique = createIndexParam.type == "UNIQUE" ? "UNIQUE " : "";
+        if (createIndexParam.type && createIndexParam.type != "UNIQUE" && createIndexParam.type != "INDEX") {
+            return null;
+        }
+        return `CREATE ${unique}INDEX ${createIndexParam.column}_${new Date().getTime()}_index ON ${createIndexParam.table} (${createIndexParam.column});`;
     }
     dropIndex(table: string, indexName: string): string {
         return `DROP INDEX ${indexName};`
@@ -45,7 +56,7 @@ export class SqliTeDialect extends SqlDialect{
         return `SELECT * FROM ${table} LIMIT ${pageSize};`;
     }
     countSql(database: string, table: string): string {
-        throw new Error("Method not implemented.");
+        return `SELECT COUNT(*) AS total FROM ${table};`;
     }
     createDatabase(database: string): string {
         throw new Error("Method not implemented.");

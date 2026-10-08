@@ -203,7 +203,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
             this.dialect = ServiceManager.getDialect(this.dbType, this.jdbcUrl)
         }
         if (this.disable) {
-            this.command = { command: "jenishbh.connection.open", title: "Open Connection", arguments: [this] }
+            this.command = { command: "dbclient.connection.open", title: "Open Connection", arguments: [this] }
         }
         this.key = source.key || this.key;
         this.initUid();

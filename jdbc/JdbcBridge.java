@@ -235,6 +235,27 @@ public class JdbcBridge {
             return;
         }
 
+        if ("indexes".equals(op)) {
+            // getIndexInfo is the portable way to list indexes; the column
+            // names match what the designer's index panel renders.
+            ResultSet rs = md.getIndexInfo(blankToNull(catalog), blankToNull(schema), table, false, true);
+            try {
+                while (rs.next()) {
+                    String name = rs.getString("INDEX_NAME");
+                    if (name == null) continue; // tableIndexStatistic rows carry no name
+                    rows.add(map(
+                        "index_name", name,
+                        "column_name", rs.getString("COLUMN_NAME"),
+                        "non_unique", Boolean.valueOf(rs.getBoolean("NON_UNIQUE")),
+                        "index_type", String.valueOf(rs.getShort("TYPE"))));
+                }
+            } finally {
+                rs.close();
+            }
+            ok(id, map("rows", rows));
+            return;
+        }
+
         fail(id, new IllegalArgumentException("unknown structure op: " + op));
     }
 

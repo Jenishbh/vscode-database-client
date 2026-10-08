@@ -30,7 +30,7 @@ export class TableNode extends Node implements CopyAble {
         this.tooltip = this.getToolTipe(meta)
         this.cacheSelf()
         this.command = {
-            command: "jenishbh.table.find",
+            command: "dbclient.table.find",
             title: "Run Select Statement",
             arguments: [this, true],
         }
@@ -202,7 +202,16 @@ export class TableNode extends Node implements CopyAble {
                     this.setChildCache(null)
                     this.provider.reload(this.parent)
                 }).on("dropIndex", async indexName => {
-                    const sql = this.dialect.dropIndex(this.table, indexName);
+                    let sql: string;
+                    try {
+                        sql = this.dialect.dropIndex(this.table, indexName);
+                    } catch (err) {
+                        // The base dialect throws for engines that never
+                        // implemented this; say so instead of leaving the
+                        // rejection unhandled.
+                        handler.emit("error", `Dropping an index is not supported for ${this.dbType}.`)
+                        return;
+                    }
                     await executeAndRefresh(sql, handler)
                 }).on("execute", async sql => {
                     await executeAndRefresh(sql, handler)
@@ -211,6 +220,12 @@ export class TableNode extends Node implements CopyAble {
                     this.provider.reload(this.parent)
                 }).on("createIndex", async ({ column, type, indexType }) => {
                     const sql = this.dialect.createIndex({ column, type, indexType, table: this.wrap(this.table) });
+                    if (!sql) {
+                        // The dialect has no statement for this. Without this
+                        // branch it reaches query(null) and fails obscurely.
+                        handler.emit("error", `Creating ${type || "an index"} is not supported for ${this.dbType}.`)
+                        return;
+                    }
                     await executeAndRefresh(sql, handler)
                 })
             })

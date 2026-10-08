@@ -4,7 +4,7 @@ import * as path from "path";
 const extName=require("@/../package.json")
 
 export class Constants {
-    public static CONFIG_PREFIX = "database-client-jenishbh"
+    public static CONFIG_PREFIX = "database-client"
     public static RES_PATH = path.join(vscode.extensions.getExtension(`${extName.publisher}.${extName.name}`).extensionPath, "resources");
 }
 
@@ -33,8 +33,8 @@ export enum ConfigKey {
 }
 
 export enum CodeCommand {
-    RecordHistory = "jenishbh.history.record",
-    Refresh = "jenishbh.refresh"
+    RecordHistory = "dbclient.history.record",
+    Refresh = "dbclient.refresh"
 }
 
 export class Cursor {

@@ -6,7 +6,7 @@
 
 ## 安装
 
-从 [Visual Studio Code 扩展商店](https://marketplace.visualstudio.com/items?itemName=jenishbh.vscode-mysql-client2) 或 [Open VSX](https://open-vsx.org/extension/jenishbh/vscode-mysql-client2) 安装
+本分支不发布到扩展商店，请参见 README 的安装说明。
 
 ## 遥测报告
 

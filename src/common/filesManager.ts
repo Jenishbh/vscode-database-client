@@ -49,6 +49,16 @@ export class FileManager {
         return `${this.storagePath}/${fileName}`;
     }
 
+    /**
+     * True when the path is a file this extension wrote under globalStorage.
+     * Compared case-insensitively, since Windows paths are.
+     */
+    public static isOurs(filePath: string): boolean {
+        if (!this.storagePath || !filePath) { return false; }
+        const norm = (p: string) => path.normalize(p).toLowerCase();
+        return norm(filePath).startsWith(norm(this.storagePath + path.sep));
+    }
+
 
     private static check(checkPath: string) {
         if (!fs.existsSync(checkPath)) { this.recursiseCreate(checkPath) }

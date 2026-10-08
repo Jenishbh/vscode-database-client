@@ -1,4 +1,4 @@
-# Database Client (jenishbh fork)
+# Database Client
 
 An offline-only fork of [cweijan/vscode-database-client](https://github.com/cweijan/vscode-database-client),
 forked from the MIT-licensed source at version **3.9.8**.
@@ -37,7 +37,7 @@ Some features shell out to command line tools. This fork never downloads them. Y
 them yourself, then either put them on your `PATH` or drop them in one folder and point the
 extension at it:
 
-1. Set **`database-client-jenishbh.binaryPath`** to a folder of your choice.
+1. Set **`database-client.binaryPath`** to a folder of your choice.
 2. Place the executables you need in that folder.
 3. Run **`Database Client: Check External Tools`** from the Command Palette to verify.
 
@@ -76,7 +76,7 @@ dependency type definitions do not block a clean type check.
 
 ### Other changes
 
-- Publisher, extension ID, view IDs, and command categories renamed from `cweijan` to `jenishbh`.
+- Publisher, extension ID, view IDs, settings prefix and command IDs renamed off `cweijan` so this fork cannot collide with the upstream extension.
 - `pad()` in `historyRecorder.ts` declared a `number` return type but built a string; annotation corrected.
 - `cpu-features` (an optional native dependency of `ssh2`) marked external in the esbuild config.
 

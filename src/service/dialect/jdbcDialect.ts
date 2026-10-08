@@ -1,3 +1,4 @@
+import { CreateIndexParam } from "./param/createIndexParam";
 import { SqlDialect } from "./sqlDialect";
 import { UpdateTableParam } from "./param/updateTableParam";
 
@@ -60,6 +61,31 @@ export class JdbcDialect extends SqlDialect {
     showTables(database: string): string { return meta("tables", database); }
     showViews(database: string): string { return meta("views", database); }
     showColumns(database: string, table: string): string { return meta("columns", database, table); }
+    showIndex(database: string, table: string): string { return meta("indexes", database, table); }
+
+    createIndex(createIndexParam: CreateIndexParam): string {
+        // CREATE INDEX ... ON t (c) is the one form shared by effectively every
+        // JDBC target that has indexes at all. A PRIMARY KEY is not an index
+        // operation, and the syntax for adding one is not portable, so it is
+        // left to the engine-specific dialects.
+        const type = createIndexParam.type;
+        if (type && type != "INDEX" && type != "UNIQUE") { return null; }
+        const unique = type == "UNIQUE" ? "UNIQUE " : "";
+        const name = `${createIndexParam.column}_${new Date().getTime()}_index`;
+        return `CREATE ${unique}INDEX ${name} ON ${createIndexParam.table} (${createIndexParam.column})${this.terminator}`;
+    }
+
+    dropIndex(table: string, indexName: string): string {
+        const url = (this.jdbcUrl || "").toLowerCase();
+        // The three incompatible spellings of the same statement.
+        if (/^jdbc:(mysql|mariadb)/.test(url)) {
+            return `DROP INDEX ${indexName} ON ${table}${this.terminator}`;
+        }
+        if (/^jdbc:(sqlserver|jtds)/.test(url)) {
+            return `DROP INDEX ${table}.${indexName}${this.terminator}`;
+        }
+        return `DROP INDEX ${indexName}${this.terminator}`;
+    }
 
     // ---- statements the user sees ----
     buildPageSql(database: string, table: string, pageSize: number): string {

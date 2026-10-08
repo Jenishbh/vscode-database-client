@@ -40,7 +40,7 @@
       <span class="text-sm">
         Requires Java on PATH. Drivers for PostgreSQL, MySQL, SQL Server and ClickHouse
         ship with the extension; for anything else drop the jar in the folder set by
-        <code>database-client-jenishbh.binaryPath</code>. Nothing is downloaded at runtime &mdash; run
+        <code>database-client.binaryPath</code>. Nothing is downloaded at runtime &mdash; run
         <b>Database Client: Check External Tools</b> to see what was found.
       </span>
     </section>

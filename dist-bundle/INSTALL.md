@@ -1,12 +1,13 @@
-# Database Client (jenishbh) — Install
+# Database Client — Install
 
-An offline-only VS Code database client. Nothing it does phones home.
+An offline-only VS Code database client. Nothing it does phones home, and it
+ships with no connections configured.
 
 ## Install — double-click `INSTALL.bat`
 
 That's it. It finds VS Code, installs the extension, and tells you what to do next.
 
-Restart VS Code afterwards and look for **DB (jenishbh)** in the activity bar.
+Restart VS Code afterwards and look for **Database** in the activity bar.
 
 ### Use `INSTALL.bat`, not the `.vsix`
 
@@ -19,17 +20,6 @@ Or run it yourself:
 ```
 code --install-extension vscode-database-client-1.5.0.vsix
 ```
-
-## Load the sample connections (optional)
-
-`sample-connections.json` holds 20 example entries covering every connector: MySQL,
-MariaDB, Percona, PostgreSQL, TimescaleDB, SQL Server, Oracle, ClickHouse, SQLite,
-CockroachDB, Trino, MongoDB, Redis, ElasticSearch, SSH/SFTP, FTP and S3/MinIO.
-
-`Ctrl+Shift+P` → **Database Client: Import Connections** → pick that file.
-
-They point at localhost and are examples of the file format, not working credentials.
-Edit hosts, ports and passwords to match your own servers.
 
 ## What works with no extra downloads
 
@@ -72,7 +62,7 @@ All optional. Each gates one action; none are needed to connect, browse, query o
 | `ssh` | SOCKS proxy tunnelling | SSH connections and tunnels still work |
 
 Put them on your `PATH`, or drop them in one folder and point
-`database-client-jenishbh.binaryPath` at it in VS Code settings. A binary in that
+`database-client.binaryPath` at it in VS Code settings. A binary in that
 folder takes priority over one on `PATH`.
 
 **Database Client: Check External Tools** lists every tool, whether it was found, and
@@ -89,9 +79,21 @@ build time, and the webviews carry a Content-Security-Policy with `connect-src '
 
 ## Uninstall
 
-VS Code → Extensions → find **Database Client (jenishbh)** → Uninstall.
+Double-click **`UNINSTALL.bat`**. It removes the extension and every saved
+connection.
 
-Or: `code --uninstall-extension jenishbh.vscode-database-client`
+Uninstalling from **Extensions → Database Client → Uninstall** also clears saved
+connections. `code --uninstall-extension` on its own does not: that route never
+runs an extension's uninstall step, so it leaves them on disk. `UNINSTALL.bat`
+covers both.
+
+To clear saved connections without uninstalling:
+`Ctrl+Shift+P` -> **Database Client: Delete All Saved Connections**.
+
+## Your connections stay on this machine
+
+Connections live in one file inside VS Code's own extension storage folder, and
+nothing is sent anywhere. Removing the extension removes the file.
 
 ## Licence
 

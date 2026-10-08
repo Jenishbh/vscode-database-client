@@ -5,8 +5,17 @@ import { UpdateTableParam } from "./param/updateTableParam";
 import { SqlDialect } from "./sqlDialect";
 
 export class MssqlDIalect extends SqlDialect {
-    createIndex(createIndexParam:CreateIndexParam): string{
-        return `ALTER TABLE ${createIndexParam.table} ADD ${createIndexParam.type} (${createIndexParam.column})`;
+    createIndex(createIndexParam: CreateIndexParam): string {
+        // "ALTER TABLE t ADD INDEX (c)" is MySQL syntax; T-SQL rejects it at
+        // parse time. A named CREATE INDEX also round-trips with showIndex and
+        // dropIndex, which read and drop by index name -- an ALTER-created
+        // UNIQUE constraint cannot be dropped with DROP INDEX.
+        const type = createIndexParam.type;
+        if (type == "INDEX" || type == "UNIQUE") {
+            const unique = type == "UNIQUE" ? "UNIQUE " : "";
+            return `CREATE ${unique}INDEX ${createIndexParam.column}_${new Date().getTime()}_index ON ${createIndexParam.table} (${createIndexParam.column})`;
+        }
+        return `ALTER TABLE ${createIndexParam.table} ADD ${type} (${createIndexParam.column})`;
     }
     dropIndex(table: string, indexName: string): string {
         return `DROP INDEX ${table}.${indexName}`

@@ -86,7 +86,7 @@
       </div>
       <div class="st-note" v-if="activeEntry && activeEntry.kind === 'jdbc'">
         <span v-if="activeEntry.bundled">Driver ships with the extension &mdash; nothing to download.</span>
-        <span v-else>Needs a JDBC driver jar in the folder set by <code>database-client-jenishbh.binaryPath</code>. Run <b>Database Client: Check External Tools</b> to verify.</span>
+        <span v-else>Needs a JDBC driver jar in the folder set by <code>database-client.binaryPath</code>. Run <b>Database Client: Check External Tools</b> to verify.</span>
       </div>
     </section>
 

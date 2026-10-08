@@ -25,6 +25,11 @@ audit2.json
 *.log
 .git/
 build.js
+build/**
 .vscodeignore
 vsix-verify/
 *.vsix
+*.zip
+package-lock.json
+_gs/**
+sandbox/**

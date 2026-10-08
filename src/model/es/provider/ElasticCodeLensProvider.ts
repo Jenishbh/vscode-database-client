@@ -16,25 +16,25 @@ export class ElasticCodeLensProvider implements vscode.CodeLensProvider {
             if (em.Error.Text == null) {
                 ret.push(new vscode.CodeLens(em.Method.Range, {
                     title: "▶ Run Query",
-                    command: "jenishbh.elastic.execute",
+                    command: "dbclient.elastic.execute",
                     arguments: [em,false]
                 }))
                 ret.push(new vscode.CodeLens(em.Method.Range, {
                     title: "▶ Run Query And Parse",
-                    command: "jenishbh.elastic.execute",
+                    command: "dbclient.elastic.execute",
                     arguments: [em,true]
                 }))
                 if(DocumentFinder.find(em.Path.Text)){
                     ret.push(new vscode.CodeLens(em.Method.Range, {
                         title: "📃 Api Document",
-                        command: "jenishbh.elastic.document",
+                        command: "dbclient.elastic.document",
                         arguments: [em]
                     }))
                 }
                 if (em.HasBody) {
                     var command = {
                         title: "⚡Auto indent",
-                        command: "jenishbh.elastic.lint",
+                        command: "dbclient.elastic.lint",
                         arguments: [em]
                     }
                     ret.push(new vscode.CodeLens(em.Method.Range, command))
