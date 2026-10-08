@@ -154,7 +154,7 @@
 
       <SQLServer :connectionOption="connectionOption" v-if="connectionOption.dbType == 'SqlServer'" />
 
-      <Oracle :connectionOption="connectionOption" />
+      <Oracle :connectionOption="connectionOption" v-if="connectionOption.dbType == 'Oracle'" />
 
       <section>
         <div class="inline-block mb-2 mr-10" v-if="connectionOption.dbType != 'Redis'">
@@ -218,13 +218,6 @@
     <section class="flex items-center">
       <div
         class="inline-block mb-2 mr-10"
-        v-if="connectionOption.dbType != 'SSH' && connectionOption.dbType != 'SQLite'"
-      >
-        <label class="mr-2 font-bold">SSH Tunnel</label>
-        <el-switch v-model="connectionOption.usingSSH"></el-switch>
-      </div>
-      <div
-        class="inline-block mb-2 mr-10"
         v-if="
           connectionOption.dbType == 'MySQL' ||
           connectionOption.dbType == 'PostgreSQL' ||
@@ -259,7 +252,7 @@
       :connectionOption="connectionOption"
       v-if="
         connectionOption.useSSL &&
-        ['MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'ElasticSearch'].includes(connectionOption.dbType)
+        ['MySQL', 'PostgreSQL', 'MongoDB', 'Redis'].includes(connectionOption.dbType)
       "
     />
     </div>
@@ -272,56 +265,6 @@
       </section>
       <SSH :connectionOption="connectionOption" v-if="connectionOption.dbType != 'SSH'"
         @choose="choose('privateKey')" />
-    </div>
-
-    <div v-show="configTab === 'socks'">
-      <section class="mt-4">
-        <div class="cfg__notice">
-          The form below is saved with the connection, but proxy routing is not implemented yet,
-          so these values do not affect how the connection is made.
-        </div>
-        <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-24 mr-5 font-bold">Host</label>
-          <input class="field__input" placeholder="127.0.0.1" v-model="connectionOption.socksHost" />
-        </div>
-        <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-24 mr-5 font-bold">Port</label>
-          <input class="field__input" style="width: 8rem" placeholder="1080" v-model="connectionOption.socksPort" />
-        </div>
-        <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-24 mr-5 font-bold">Username</label>
-          <input class="field__input" v-model="connectionOption.socksUser" />
-        </div>
-        <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-24 mr-5 font-bold">Password</label>
-          <input class="field__input" type="password" v-model="connectionOption.socksPassword" />
-        </div>
-      </section>
-    </div>
-
-    <div v-show="configTab === 'http'">
-      <section class="mt-4">
-        <div class="cfg__notice">
-          The form below is saved with the connection, but proxy routing is not implemented yet,
-          so these values do not affect how the connection is made.
-        </div>
-        <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-24 mr-5 font-bold">Host</label>
-          <input class="field__input" placeholder="127.0.0.1" v-model="connectionOption.httpProxyHost" />
-        </div>
-        <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-24 mr-5 font-bold">Port</label>
-          <input class="field__input" style="width: 8rem" placeholder="8080" v-model="connectionOption.httpProxyPort" />
-        </div>
-        <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-24 mr-5 font-bold">Username</label>
-          <input class="field__input" v-model="connectionOption.httpProxyUser" />
-        </div>
-        <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-24 mr-5 font-bold">Password</label>
-          <input class="field__input" type="password" v-model="connectionOption.httpProxyPassword" />
-        </div>
-      </section>
     </div>
 
     <div class="mt-4">
@@ -400,8 +343,6 @@ export default {
       configTabs: [
         { id: "main", label: "Main", icon: "⚙" },
         { id: "ssh", label: "SSH Tunnel", icon: "✂" },
-        { id: "socks", label: "Socks Proxy", icon: "⇄" },
-        { id: "http", label: "HTTP Proxy", icon: "☷" },
       ],
       connect: {
         loading: false,
@@ -628,6 +569,8 @@ export default {
 .connect-container {
   width: 100%;
   max-width: 1300px;
+  box-sizing: border-box;
+  padding: 4px 28px 32px;
 }
 
 .tab {

@@ -1,27 +1,25 @@
 <template>
+  <!-- The parent only renders this for SqlServer, so nothing here re-checks it. -->
   <div>
-    <section class="mb-2" v-if="connectionOption.dbType == 'SqlServer'">
+    <section class="mb-2">
       <div class="inline-block mr-10">
         <label class="inline-block w-32 mr-5 font-bold">Instance Name</label>
         <input
           class="w-64 field__input"
-          placeholder="Connection named instance"
-          title="The instance name to connect to. The SQL Server Browser service must be running on the database server, and UDP port 1434 on the database server must be reachable.(no default)"
+          placeholder="Named instance (optional)"
+          title="The instance name to connect to. The SQL Server Browser service must be running on the database server, and UDP port 1434 on the database server must be reachable."
           v-model="connectionOption.instanceName"
         />
       </div>
-      <span> (If instance name is specified, the port config is ignored) </span>
+      <span class="hint">Set this and the Port above is ignored.</span>
     </section>
 
-    <section class="mb-2" v-if="connectionOption.dbType == 'SqlServer'">
-      <div class="inline-block mr-10" v-if="connectionOption.dbType == 'SqlServer'">
+    <section class="mb-2">
+      <div class="inline-block mr-10">
         <label class="inline-block w-32 mr-5 font-bold">Auth Type</label>
         <el-select v-model="connectionOption.authType">
-          <el-option :label="'default'" value="default"></el-option>
-          <el-option :label="'ntlm(Windows Auth)'" value="ntlm"></el-option>
-          <!-- <el-option :label="'azure-active-directory-password'" value="azure-active-directory-password"></el-option>
-              <el-option :label="'azure-active-directory-msi-vm'" value="azure-active-directory-msi-vm"></el-option>
-              <el-option :label="'azure-active-directory-msi-app-service'" value="azure-active-directory-msi-app-service"></el-option> -->
+          <el-option label="SQL Login" value="default"></el-option>
+          <el-option label="Windows (NTLM)" value="ntlm"></el-option>
         </el-select>
       </div>
       <div class="inline-block mr-10">
@@ -37,13 +35,25 @@
       </div>
     </section>
 
-    <section class="mb-2" v-if="connectionOption.dbType == 'SqlServer' && connectionOption.authType == 'ntlm'">
+    <section class="mb-2" v-if="connectionOption.authType == 'ntlm'">
       <div class="inline-block mr-10">
         <label class="inline-block w-32 mr-5 font-bold">
           Domain
-          <span class="mr-1 text-red-600">*</span>
+          <span class="mr-1 text-red-600" title="required">*</span>
         </label>
-        <input class="w-64 field__input" placeholder="Domain" v-model="connectionOption.domain" />
+        <input
+          class="w-64 field__input"
+          placeholder="e.g. CORP"
+          title="The Windows domain of the account, without the backslash."
+          required
+          v-model="connectionOption.domain"
+        />
+      </div>
+      <div class="hint hint--block">
+        Signs in as the account below, not as the Windows user running VS Code,
+        so Username and Password are still needed. Split the account across the
+        fields: <code>CORP\alice</code> is Domain <code>CORP</code>,
+        Username <code>alice</code>.
       </div>
     </section>
   </div>
@@ -55,4 +65,16 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.hint {
+  opacity: 0.75;
+  font-size: 12px;
+}
+
+.hint--block {
+  display: block;
+  margin-top: 6px;
+  max-width: 760px;
+  line-height: 1.5;
+}
+</style>

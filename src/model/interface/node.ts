@@ -105,14 +105,6 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
      */
     public esUrl: string;
     public group: string;
-    public socksHost: string;
-    public socksPort: number;
-    public socksUser: string;
-    public socksPassword: string;
-    public httpProxyHost: string;
-    public httpProxyPort: number;
-    public httpProxyUser: string;
-    public httpProxyPassword: string;
     public serverType: string;
     public jdbcUrl: string;
     public jdbcDriver: string;
@@ -179,14 +171,6 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         this.trustServerCertificate = source.trustServerCertificate
         this.dbPath = source.dbPath
         this.group = source.group
-        this.socksHost = source.socksHost
-        this.socksPort = source.socksPort
-        this.socksUser = source.socksUser
-        this.socksPassword = source.socksPassword
-        this.httpProxyHost = source.httpProxyHost
-        this.httpProxyPort = source.httpProxyPort
-        this.httpProxyUser = source.httpProxyUser
-        this.httpProxyPassword = source.httpProxyPassword
         this.serverType = source.serverType
         this.jdbcUrl = source.jdbcUrl
         this.jdbcDriver = source.jdbcDriver
