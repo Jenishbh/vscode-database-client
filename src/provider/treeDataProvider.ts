@@ -1,4 +1,4 @@
-import { GlobalState, WorkState } from "@/common/state";
+import { globalMemento, GlobalState, workspaceMemento, WorkState } from "@/common/state";
 import { CatalogNode } from "@/model/database/catalogNode";
 import { EsConnectionNode } from "@/model/es/model/esConnectionNode";
 import { FTPConnectionNode } from "@/model/ftp/ftpConnectionNode";
@@ -73,7 +73,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
     public async addConnection(node: Node) {
 
         const newKey = this.getKeyByNode(node)
-        node.context = node.global ? this.context.globalState : this.context.workspaceState
+        node.context = node.global ? globalMemento : workspaceMemento
 
         const isGlobal = (node as any).isGlobal;
         const configNotChange = newKey == node.connectionKey && isGlobal == node.global
@@ -84,9 +84,9 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
         // config has change, remove old connection.
         if (isGlobal != null) {
-            node.context = isGlobal ? this.context.globalState : this.context.workspaceState
+            node.context = isGlobal ? globalMemento : workspaceMemento
             await node.indent({ command: CommandKey.delete, connectionKey: node.connectionKey, refresh: false })
-            node.context = node.global ? this.context.globalState : this.context.workspaceState
+            node.context = node.global ? globalMemento : workspaceMemento
         }
 
         node.connectionKey = newKey
@@ -152,7 +152,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         node.connectionKey = connectionKey;
         node.provider = this
         node.global = global;
-        node.context = node.global ? this.context.globalState : this.context.workspaceState;
+        node.context = node.global ? globalMemento : workspaceMemento;
         if (!node.global) {
             node.description = `${node.description || ''} workspace`
         }

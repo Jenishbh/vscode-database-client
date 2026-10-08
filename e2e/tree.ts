@@ -16,10 +16,10 @@ const path = require("path");
 
 const config = JSON.parse(fs.readFileSync(process.env.CONN_JSON, "utf8"));
 
-const store: any = {
-  [CacheKey.DATBASE_CONECTIONS]: config.database.global,
-  [CacheKey.NOSQL_CONNECTION]: config.nosql.global,
-};
+// Starts empty: connections are seeded after activate() through the store the
+// extension really uses. Pre-filling this would only exercise the legacy
+// migration path, not the tree.
+const store: any = {};
 
 const memento = {
   get: (k: string, d?: any) => (store[k] !== undefined ? store[k] : d),
@@ -114,6 +114,35 @@ async function walk(key: string, treeName: string) {
   const { GlobalState } = require("@/common/state");
   if (Object.keys(GlobalState.get(CacheKey.DATBASE_CONECTIONS, {})).length !== 0) {
     throw new Error("a fresh store should hold no connections");
+  }
+
+  // Saving and listing go through different code: addConnection persists via
+  // the Memento on the node, getConnectionNodes reads the store. When those
+  // two pointed at different places a connection saved fine and never
+  // appeared in the tree, which is what the user sees.
+  {
+    const { DbTreeDataProvider: Provider } = require("@/provider/treeDataProvider");
+    const { NodeUtil } = require("@/model/nodeUtil");
+    const { CommandKey } = require("@/model/interface/node");
+    const probe = NodeUtil.of({
+      name: "round-trip probe", dbType: "MySQL", global: true,
+      host: "127.0.0.1", port: 13306, user: "root", password: "x",
+    });
+    const provider = new Provider(context, CacheKey.DATBASE_CONECTIONS);
+    probe.initKey();
+    await provider.addConnection(probe);
+    const listed = await provider.getConnectionNodes();
+    const found = listed.some((n: any) => n.name === "round-trip probe");
+    if (!found) {
+      throw new Error("addConnection saved a connection the tree cannot list (" +
+        listed.length + " listed)");
+    }
+    await probe.indent({ command: CommandKey.delete, connectionKey: probe.connectionKey, refresh: false });
+    const after = await provider.getConnectionNodes();
+    if (after.some((n: any) => n.name === "round-trip probe")) {
+      throw new Error("deleting a connection left it in the tree");
+    }
+    console.log("  save -> list round trip: OK");
   }
   await GlobalState.update(CacheKey.DATBASE_CONECTIONS, config.database.global);
   await GlobalState.update(CacheKey.NOSQL_CONNECTION, config.nosql.global);

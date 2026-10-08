@@ -46,6 +46,10 @@ class JsonStore {
         }
     }
 
+    public keys(): string[] {
+        return Object.keys(this.data);
+    }
+
     public get<T>(key: string, defaultValue?: T): T {
         const value = this.data[key];
         return value === undefined ? defaultValue : value;
@@ -93,6 +97,57 @@ const globalStore = new JsonStore();
 const workspaceStore = new JsonStore();
 
 /**
+ * Memento-shaped view of a store. Node.indent() persists through a Memento it
+ * is handed, so it has to write to the same place the tree reads from.
+ */
+function asMemento(store: JsonStore): vscode.Memento {
+    return {
+        keys: () => store.keys(),
+        get: <T>(key: string, defaultValue?: T) => store.get(key, defaultValue),
+        update: (key: string, value: any) => store.update(key, value),
+    } as vscode.Memento;
+}
+
+export const globalMemento = asMemento(globalStore);
+export const workspaceMemento = asMemento(workspaceStore);
+
+/** Keys written before connections moved out of globalState. */
+const LEGACY_KEYS = [
+    "mysql.connections", "redis.connections",
+    "mysql.database.cache.collapseState", "redis.cache.collapseState",
+    "sql.history",
+];
+
+/**
+ * Connections saved by an earlier build live in VS Code's own state database.
+ * Move them into the file store and clear the originals, so nothing is lost
+ * and nothing is left behind for an uninstall to miss.
+ */
+function migrate(from: vscode.Memento, store: JsonStore) {
+    let names = LEGACY_KEYS.slice();
+    try {
+        if (typeof (from as any).keys === "function") {
+            names = Array.from(new Set(names.concat((from as any).keys())));
+        }
+    } catch (err) {
+        // keys() only exists from VS Code 1.69; the known list still applies
+    }
+    for (const name of names) {
+        let value: any;
+        try {
+            value = from.get(name);
+        } catch (err) {
+            continue;
+        }
+        if (value === undefined) { continue; }
+        if (store.get(name) === undefined) {
+            store.update(name, value);
+        }
+        Promise.resolve(from.update(name, undefined)).then(undefined, () => { });
+    }
+}
+
+/**
  * Must run before anything reads a connection, so it is the first thing
  * activate() does.
  */
@@ -101,6 +156,8 @@ export function initState(context: vscode.ExtensionContext) {
     // storageUri is undefined when no folder is open, and workspace-scoped
     // connections have no workspace to belong to in that case.
     workspaceStore.init(context.storageUri ? context.storageUri.fsPath : undefined);
+    migrate(context.globalState, globalStore);
+    migrate(context.workspaceState, workspaceStore);
 }
 
 /** Forget every connection, history entry and cached tree state. */
