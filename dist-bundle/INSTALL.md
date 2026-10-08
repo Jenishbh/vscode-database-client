@@ -2,20 +2,35 @@
 
 An offline-only VS Code database client. Nothing it does phones home.
 
-## Install
+## Install — double-click `INSTALL.bat`
 
-1. Open **VS Code**
-2. `Ctrl+Shift+P` → **Extensions: Install from VSIX...**
-3. Pick `vscode-database-client-1.5.0.vsix` from this folder
-4. Reload VS Code when prompted
+That's it. It finds VS Code, installs the extension, and tells you what to do next.
 
-Or from a terminal:
+Restart VS Code afterwards and look for **DB (jenishbh)** in the activity bar.
+
+### Do not double-click the `.vsix` file
+
+It will fail, and the error makes it look like the file is broken. It isn't.
+Two different things go wrong depending on the machine:
+
+**If Visual Studio is installed**, Windows hands every `.vsix` to *Visual Studio's*
+installer, which only handles Visual Studio extensions. You get:
+
+> One or more extensions are for Visual Studio Code. Try installing them in Visual Studio Code.
+
+**If Visual Studio is not installed**, VS Code takes it and refuses it as unsigned.
+Only extensions published through the VS Code Marketplace carry a signature; every
+locally built `.vsix` is unsigned, including this one.
+
+`INSTALL.bat` sidesteps both by calling the VS Code CLI directly.
+
+### Prefer to do it yourself
 
 ```
 code --install-extension vscode-database-client-1.5.0.vsix
 ```
 
-Then look for **DB (jenishbh)** and **NoSQL (jenishbh)** in the activity bar.
+Or inside VS Code: **Extensions** panel → the `...` menu → **Install from VSIX…**
 
 ## Load the sample connections (optional)
 
@@ -23,10 +38,9 @@ Then look for **DB (jenishbh)** and **NoSQL (jenishbh)** in the activity bar.
 MariaDB, Percona, PostgreSQL, TimescaleDB, SQL Server, Oracle, ClickHouse, SQLite,
 CockroachDB, Trino, MongoDB, Redis, ElasticSearch, SSH/SFTP, FTP and S3/MinIO.
 
-They point at localhost and are examples of the file format, not working credentials.
-
 `Ctrl+Shift+P` → **Database Client: Import Connections** → pick that file.
 
+They point at localhost and are examples of the file format, not working credentials.
 Edit hosts, ports and passwords to match your own servers.
 
 ## What works with no extra downloads
@@ -36,29 +50,30 @@ Every database driver is compiled into the extension. These connect out of the b
 | | |
 |---|---|
 | MySQL · MariaDB · Percona | PostgreSQL · CockroachDB · TimescaleDB |
-| SQL Server | MongoDB |
+| SQL Server | Oracle |
+| ClickHouse | MongoDB |
 | Redis | ElasticSearch |
 | SQLite *(binary included)* | S3 / MinIO |
 | SSH / SFTP | FTP |
 
+Roughly twenty more engines work through the bundled JDBC bridge — Db2, Trino,
+Snowflake, BigQuery, Databricks, Hive, Redshift, Cassandra, H2 and others. All ten
+driver jars ship inside the extension.
+
 ## What needs Java
 
-JDBC connections — **Oracle, Db2, ClickHouse, Trino, H2** and roughly twenty more.
+JDBC connections only.
 
-The driver `.jar` files ship inside the extension. The Java runtime does not, because
-we cannot redistribute a JVM.
+You need a **JDK 11 or newer — a JRE is not enough.** The bridge runs as
+`java -cp <drivers> JdbcBridge.java`, Java's single-file source mode (JEP 330),
+which uses the JDK's built-in compiler. A JRE has no compiler and will fail.
 
-You need a **JDK 11 or newer — a JRE is not enough.** The helper runs as
-`java -cp <drivers> JdbcBridge.java`, which is Java's single-file source mode (JEP 330)
-and uses the JDK's built-in compiler. A JRE has no compiler and will fail.
-
-JDK 21 is recommended. Make sure `java` is on your `PATH`, then run
+JDK 21 is recommended. Put `java` on your `PATH`, then run
 `Ctrl+Shift+P` → **Database Client: Check External Tools** to confirm it was found.
 
 ## Optional command line tools
 
-Everything below is optional. Each one gates a single action; none of them are needed
-to connect, browse, query or edit.
+All optional. Each gates one action; none are needed to connect, browse, query or edit.
 
 | Tool | Gives you | Without it |
 |---|---|---|
@@ -68,8 +83,8 @@ to connect, browse, query or edit.
 | `mongoimport` | MongoDB import | only that action is unavailable |
 | `ssh` | SOCKS proxy tunnelling | SSH connections and tunnels still work |
 
-To use them, either put them on your `PATH`, or drop them in one folder and set
-`database-client-jenishbh.binaryPath` to it in VS Code settings. A binary in that
+Put them on your `PATH`, or drop them in one folder and point
+`database-client-jenishbh.binaryPath` at it in VS Code settings. A binary in that
 folder takes priority over one on `PATH`.
 
 **Database Client: Check External Tools** lists every tool, whether it was found, and
@@ -81,8 +96,14 @@ No telemetry, no account, no licence server, no cloud sync, and nothing is downl
 at runtime. The only network connections are to the database and SSH/FTP servers you
 configure yourself.
 
-A tracking pixel found inside a third-party charting library is neutralised at build
-time, and the webviews carry a Content-Security-Policy with `connect-src 'self'`.
+A tracking pixel that ships inside a third-party charting library is neutralised at
+build time, and the webviews carry a Content-Security-Policy with `connect-src 'self'`.
+
+## Uninstall
+
+VS Code → Extensions → find **Database Client (jenishbh)** → Uninstall.
+
+Or: `code --uninstall-extension jenishbh.vscode-database-client`
 
 ## Licence
 
